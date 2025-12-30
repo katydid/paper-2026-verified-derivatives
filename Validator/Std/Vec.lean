@@ -45,6 +45,11 @@ namespace Vec
 def cast {n1 n2 : Nat} (xs: Vec α n1) (h : n1 = n2): Vec α n2 :=
   h ▸ xs
 
+def cast_assoc (xs: Vec σ (n + n1 + n2)): Vec σ (n + (n1 + n2)) :=
+  have h : (n + n1 + n2) = n + (n1 + n2) := by
+    rw [<- Nat.add_assoc]
+  Vec.cast xs h
+
 def append (xs: Vec α nxs) (ys: Vec α nys): (Vec α (nxs + nys)) :=
   match xs with
   | Vec.nil => Vec.cast ys (Eq.symm (Nat.zero_add nys))

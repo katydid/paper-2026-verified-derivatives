@@ -5,7 +5,7 @@ namespace Regex.Symbol
 
 abbrev RegexID n := Regex (Fin n)
 
-def RegexID.add {n: Nat} (m: Nat) (r: RegexID n): RegexID (n + m) :=
+def RegexID.cast_add {n: Nat} (m: Nat) (r: RegexID n): RegexID (n + m) :=
   Regex.map r (fun s => (Fin.castLE (by omega) s))
 
 def RegexID.cast (r: RegexID n) (h: n = m): RegexID m :=
@@ -151,9 +151,9 @@ theorem RegexID.castLE_casts_lift_cons {x: RegexID n1} {h1: n1 ≤ k} {h2: n2 = 
       rw [<- ih]
       rw [RegexID.castLE_id]
 
-theorem RegexID.add_zero:
-  (RegexID.add 0 r) = r := by
-  simp only [Nat.add_zero, RegexID.add]
+theorem RegexID.cast_add_zero:
+  (RegexID.cast_add 0 r) = r := by
+  simp only [Nat.add_zero, RegexID.cast_add]
   simp_all only [Fin.castLE_refl]
   simp only [Regex.map_id]
 
@@ -162,16 +162,16 @@ theorem RegexID.casts_casts (xs: Vec (RegexID n1) l) (h12: n1 = n2) (h23: n2 = n
   subst h12 h23
   simp only [RegexID.casts_rfl]
 
-theorem RegexID.add_cast_is_castLE (r: RegexID n) (h: n = m):
-  (RegexID.add k (RegexID.cast r h)) = RegexID.castLE r (by omega) := by
-  simp only [RegexID.add, RegexID.cast]
+theorem RegexID.cast_add_cast_is_castLE (r: RegexID n) (h: n = m):
+  (RegexID.cast_add k (RegexID.cast r h)) = RegexID.castLE r (by omega) := by
+  simp only [RegexID.cast_add, RegexID.cast]
   subst h
   simp_all only
   rfl
 
-theorem RegexID.add_is_castLE (r: RegexID n):
-  (RegexID.add k r) = RegexID.castLE r (by omega) := by
-  simp only [RegexID.add, RegexID.castLE]
+theorem RegexID.cast_add_is_castLE (r: RegexID n):
+  (RegexID.cast_add k r) = RegexID.castLE r (by omega) := by
+  simp only [RegexID.cast_add, RegexID.castLE]
 
 theorem RegexID.casts_is_casts_rw:
   RegexID.casts xs h =

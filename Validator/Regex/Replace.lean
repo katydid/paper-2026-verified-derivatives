@@ -2,26 +2,22 @@ import Validator.Regex.Num
 import Validator.Regex.Regex
 import Validator.Regex.RegexID
 
-namespace Regex.Symbol
+namespace Regex
 
-def replace (r: RegexID n) (xs: Vec σ l) (h: n <= l): Regex σ :=
+def Symbol.replace (r: RegexID n) (xs: Vec σ l) (h: n <= l): Regex σ :=
   match r with
-  | Regex.emptyset => Regex.emptyset
-  | Regex.emptystr => Regex.emptystr
-  | Regex.symbol s => Regex.symbol (Vec.get xs (Fin.mk s.val (by
-      cases s
-      simp only
-      omega
-    )))
-  | Regex.or r1 r2 =>
-    Regex.or (replace r1 xs h) (replace r2 xs h)
-  | Regex.concat r1 r2 =>
-    Regex.concat (replace r1 xs h) (replace r2 xs h)
-  | Regex.star r1 =>
-    Regex.star (replace r1 xs h)
+  | emptyset => emptyset | emptystr => emptystr
+  | symbol ⟨s, hs⟩ => symbol (Vec.get xs (Fin.mk s (by omega)))
+  | or r1 r2 => or (replace r1 xs h) (replace r2 xs h)
+  | concat r1 r2 => concat (replace r1 xs h) (replace r2 xs h)
+  | star r1 => star (replace r1 xs h)
 
-def replaceFrom (r: RegexID n) (xs: Vec σ n): Regex σ :=
-  replace r xs (le_refl n)
+def Symbol.replaceFrom (r: RegexID n) (xs: Vec σ n): Regex σ :=
+  replace r xs (Nat.le_refl n)
+
+end Regex
+
+namespace Regex.Symbol
 
 def replacesFrom (rs: Vec (RegexID n) l) (xs: Vec σ n): Vec (Regex σ) l :=
   Vec.map rs (fun r => replaceFrom r xs)
@@ -98,30 +94,30 @@ theorem replace_take (r: RegexID n) (xs: Vec σ (n + l)):
     rw [<- ih1]
 
 theorem replace_regexid_add (r: RegexID n) (xs: Vec σ (n + l)):
-  replace r xs (by omega) = replace (RegexID.add l r) xs (by omega):= by
+  replace r xs (by omega) = replace (RegexID.cast_add l r) xs (by omega):= by
   generalize_proofs h1 h2
   induction r with
   | emptyset =>
-    simp only [replace, RegexID.add, Regex.map]
+    simp only [replace, RegexID.cast_add, Regex.map]
   | emptystr =>
-    simp only [replace, RegexID.add, Regex.map]
+    simp only [replace, RegexID.cast_add, Regex.map]
   | symbol s =>
     generalize_proofs h1 h2 at *
-    simp only [replace, RegexID.add, Regex.map, Fin.coe_castLE]
+    simp only [replace, RegexID.cast_add, Regex.map, Fin.coe_castLE]
   | or r1 r2 ih1 ih2 =>
-    simp only [replace, RegexID.add, Regex.map, Regex.or.injEq]
+    simp only [replace, RegexID.cast_add, Regex.map, Regex.or.injEq]
     generalize_proofs h1 h2 at *
     rw [ih1]
     rw [ih2]
     apply And.intro rfl rfl
   | concat r1 r2 ih1 ih2 =>
-    simp only [replace, RegexID.add, Regex.map, Regex.concat.injEq]
+    simp only [replace, RegexID.cast_add, Regex.map, Regex.concat.injEq]
     generalize_proofs h1 h2 at *
     rw [ih1]
     rw [ih2]
     apply And.intro rfl rfl
   | star r1 ih1 =>
-    simp only [replace, RegexID.add, Regex.map, Regex.star.injEq]
+    simp only [replace, RegexID.cast_add, Regex.map, Regex.star.injEq]
     generalize_proofs h1 h2 at *
     rw [ih1]
     rfl
@@ -141,7 +137,7 @@ theorem replacesFrom_cons (rs: Vec (RegexID n) l) (xs: Vec σ n):
   simp only [Vec.map]
 
 theorem replaceFrom_append (e: RegexID n) {xs: Vec α n} {ys: Vec α m}:
-  replaceFrom (RegexID.add m e) (Vec.append xs ys)
+  replaceFrom (RegexID.cast_add m e) (Vec.append xs ys)
   = replaceFrom e xs := by
   unfold replaceFrom
   rw [← replace_regexid_add e (xs.append ys)]
