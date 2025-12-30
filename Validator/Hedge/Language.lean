@@ -19,7 +19,7 @@ open List (
 
 -- Definitions
 
-def Lang (α: Type): Type := Language.Langs (Hedge.Node α)
+def Lang (α: Type): Type := Langs (Hedge.Node α)
 
 def tree {α: Type} (φ: α -> Bool) (R: Lang α): Lang α :=
   fun xs => ∃ label children, xs = [Hedge.Node.mk label children] /\ φ label /\ R children

@@ -110,38 +110,49 @@ theorem derive_is_Partial_derive
   rw [<- Symbol.extractFrom_replaceFrom_is_fmap]
   rw [Regex.Partial.derive_is_point_derive]
 
+theorem derive_is_Regex_derive
+  {σ: Type} (Φ: σ -> α -> Bool)
+  (r: Regex σ) (a: α):
+  Room.derive (flip Φ a) r = Regex.derive Φ r a := by
+  unfold Room.derive
+  unfold enter
+  unfold leave
+  simp only [<- Vec.zip_map, flip]
+  rw [<- Symbol.extractFrom_replaceFrom_is_fmap]
+  rw [Regex.Point.derive_is_point_derive]
+
 theorem derive_emptyset {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (a: α):
   Room.derive (flip Φ a) emptyset = emptyset := by
-  rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_emptyset]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_emptyset]
 
 theorem derive_emptystr {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (a: α):
   Room.derive (flip Φ a) emptystr = emptyset := by
-  rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_emptystr]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_emptystr]
 
 theorem derive_symbol {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (s: σ) (a: α):
   Room.derive (flip Φ a) (symbol s) = onlyif (Φ s a) emptystr := by
-  rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_symbol]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_symbol]
 
 theorem derive_or {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (r1 r2: Regex σ) (a: α):
   Room.derive (flip Φ a) (or r1 r2) = or (Room.derive (flip Φ a) r1) (Room.derive (flip Φ a) r2) := by
-  repeat rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_or]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_or]
 
 theorem derive_concat {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (r1 r2: Regex σ) (a: α):
   Room.derive (flip Φ a) (concat r1 r2)
     = or
       (concat (Room.derive (flip Φ a) r1) r2)
       (onlyif (null r1) (Room.derive (flip Φ a) r2)) := by
-  repeat rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_concat]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_concat]
 
 theorem derive_star {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (r1: Regex σ) (a: α):
   Room.derive (flip Φ a) (star r1) = concat (Room.derive (flip Φ a) r1) (star r1) := by
-  repeat rw [derive_is_Partial_derive]
-  rw [Regex.Partial.derive_star]
+  repeat rw [derive_is_Regex_derive]
+  rw [Regex.derive_star]
 
 theorem derives_is_Partial_map_derive
   {σ: Type} (Φ: σ -> Bool)
