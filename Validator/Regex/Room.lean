@@ -97,14 +97,9 @@ theorem derives_unapplied_is_map
   simp only [<- Vec.zip_map]
   simp only [<- Symbol.extractFrom_replaceFrom_is_fmap]
 
-theorem derive_is_Regex_derive
-  {σ: Type} (Φ: σ -> α -> Bool)
-  (r: Regex σ) (a: α):
+theorem derive_is_Regex_derive (Φ: σ -> α -> Bool) (r: Regex σ) (a: α):
   Room.derive (flip Φ a) r = Regex.derive Φ r a := by
-  unfold Room.derive
-  unfold enter
-  unfold leave
-  simp only [<- Vec.zip_map, flip]
+  simp only [Room.derive, enter, leave, <- Vec.zip_map, flip]
   rw [<- Symbol.extractFrom_replaceFrom_is_fmap]
   rw [Regex.Point.derive_is_point_derive]
 
