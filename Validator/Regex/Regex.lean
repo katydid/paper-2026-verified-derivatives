@@ -22,7 +22,7 @@ namespace Regex
 
 -- A regular expression is denoted as usual, expect that allow the user to inject the denotation of the generic symbol, Φ.
 -- This allows us to handle generic predicates or even trees, without extending the original regular expression with new operators.
-def denote {α: Type} {σ: Type} (Φ : σ -> α -> Prop) (r: Regex σ): (xs: List α) -> Prop :=
+def denote (Φ : σ -> α -> Prop) (r: Regex σ): (xs: List α) -> Prop :=
   match r with
   | emptyset => Language.emptyset
   | emptystr => Language.emptystr

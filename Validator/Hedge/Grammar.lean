@@ -21,12 +21,6 @@ def emptyset: Grammar 0 φ :=
 def emptystr: Grammar 0 φ :=
   singleton Regex.emptystr
 
-def Rule.null (r: Rule n φ): Bool :=
-  Regex.null r
-
-def null (G: Grammar n φ): Bool :=
-  Rule.null G.start
-
 example : Grammar 5 (AnyEq.Pred String) := Grammar.mk
   -- start := ("html", Html)
   (start := Regex.symbol (AnyEq.Pred.eq "html", 0))

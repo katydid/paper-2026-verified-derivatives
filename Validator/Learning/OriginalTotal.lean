@@ -81,7 +81,7 @@ def Rule.derive
       Regex.onlyif
         (
           Φ p label
-          /\ Hedge.Grammar.Rule.null (List.foldl (Rule.derive G Φ) (G.lookup ref) children)
+          /\ Regex.null (List.foldl (Rule.derive G Φ) (G.lookup ref) children)
         )
         Regex.emptystr
   | Regex.or r1 r2 =>
@@ -89,7 +89,7 @@ def Rule.derive
   | Regex.concat r1 r2 =>
     Regex.or
       (Regex.concat (Rule.derive G Φ r1 x) r2)
-      (Regex.onlyif (Hedge.Grammar.Rule.null r1) (Rule.derive G Φ r2 x))
+      (Regex.onlyif (Regex.null r1) (Rule.derive G Φ r2 x))
   | Regex.star r1 =>
     Regex.concat (Rule.derive G Φ r1 x) (Regex.star r1)
   -- Lean cannot guess how the recursive function terminates,
@@ -122,7 +122,7 @@ def Rule.derive'
 def validate
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
   (r: Hedge.Grammar.Rule n φ) (hedge: Hedge α): Bool :=
-  Hedge.Grammar.Rule.null (List.foldl (Rule.derive' G Φ) r hedge)
+  Regex.null (List.foldl (Rule.derive' G Φ) r hedge)
 
 def run [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   Except.ok (validate G AnyEq.Pred.evalb G.start [t])

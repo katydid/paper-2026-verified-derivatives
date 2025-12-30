@@ -16,7 +16,7 @@ def Grammar.Room.derive
   Regex.Room.derive (fun (s: Symbol n φ) =>
     let ⟨label, children⟩ := node
     let childr: Rule n φ := evalif G Φ s label
-    Rule.null (List.foldl (derive G Φ) childr children)
+    Regex.null (List.foldl (derive G Φ) childr children)
   ) r
 
 end Hedge
@@ -31,7 +31,7 @@ theorem unapply_hedge_param_and_flip
       let ifExpr: Grammar.Symbol n φ := symbol
       let childr: Grammar.Rule n φ := Grammar.evalif G Φ ifExpr label
       let dchildr: Grammar.Rule n φ := List.foldl (derive G Φ) childr children
-      Grammar.Rule.null dchildr
+      Regex.null dchildr
   )
   =
   (flip fun (symbol: Grammar.Symbol n φ) (x': Node α) =>
@@ -40,7 +40,7 @@ theorem unapply_hedge_param_and_flip
       let ifExpr: Grammar.Symbol n φ := symbol
       let childr: Grammar.Rule n φ := Grammar.evalif G Φ ifExpr label
       let dchildr: Grammar.Rule n φ := List.foldl (derive G Φ) childr children
-      Grammar.Rule.null dchildr
+      Regex.null dchildr
   ) x := by
   rfl
 
@@ -104,7 +104,7 @@ theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (label: α
     subst h
     induction children with
     | nil =>
-      simp only [Rule.null, List.foldl_nil, Regex.null]
+      simp only [Regex.null, List.foldl_nil, Regex.null]
     | cons x xs ih =>
       simp only [List.foldl_cons]
       rw [derive_emptyset]

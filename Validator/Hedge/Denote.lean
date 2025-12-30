@@ -284,8 +284,7 @@ theorem denote_star {α: Type} {φ: Type} (G: Hedge.Grammar n φ) (Φ: φ -> α 
 
 theorem null_commutes {α: Type}
   (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (x: Rule n φ):
-  ((Rule.null x) = true) = Language.null (Rule.denote G Φ x) := by
-  unfold Rule.null
+  ((Regex.null x) = true) = Language.null (Rule.denote G Φ x) := by
   induction x with
   | emptyset =>
     rw [denote_emptyset]
@@ -326,7 +325,7 @@ theorem null_commutes {α: Type}
     simp only
 
 theorem denote_nil_is_null (Φ: φ -> α -> Prop) [DecidableRel Φ]:
-  Rule.denote G Φ r [] = Rule.null r := by
+  Rule.denote G Φ r [] = Regex.null r := by
   rw [null_commutes G (fun s a => Φ s a)]
   cases r with
   | emptyset =>

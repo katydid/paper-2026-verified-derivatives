@@ -32,7 +32,7 @@ def derive {α: Type}
       let childxs: Hedge.Grammar.Rules n φ (Regex.Symbol.nums xs) := Hedge.Grammar.evalifs G Φ ifExprs label
       -- dchildxs = derivatives of children.
       let dchildxs: Hedge.Grammar.Rules n φ (Regex.Symbol.nums xs) := List.foldl (derive G Φ) childxs children
-      let ns: Vec Bool (Regex.Symbol.nums xs) := Vec.map dchildxs Hedge.Grammar.Rule.null
+      let ns: Vec Bool (Regex.Symbol.nums xs) := Vec.map dchildxs Regex.null
       -- leaves is the other one of our two new memoizable functions.
       let lchildxs: Hedge.Grammar.Rules n φ l := Regex.LeaveSmart.leaves xs ns
       lchildxs
@@ -47,7 +47,7 @@ def validate {α: Type}
   (G: Hedge.Grammar n φ) (Φ : φ → α → Bool)
   (x: Hedge.Grammar.Rule n φ) (hedge: Hedge α): Bool :=
   let dx := derivs G Φ x hedge
-  Hedge.Grammar.Rule.null dx
+  Regex.null dx
 
 def run {α: Type} [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Bool :=
   validate G AnyEq.Pred.evalb G.start [t]

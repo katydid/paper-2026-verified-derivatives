@@ -42,7 +42,7 @@ partial def derive
 partial def validate
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
   (x: Hedge.Grammar.Rule n φ) (hedge: Hedge α): Bool :=
-  Hedge.Grammar.Rule.null (List.foldl (derive G Φ) x hedge)
+  Regex.null (List.foldl (derive G Φ) x hedge)
 
 def run [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   Except.ok (validate G AnyEq.Pred.evalb G.start [t])
