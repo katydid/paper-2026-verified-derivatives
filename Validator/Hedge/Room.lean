@@ -1,5 +1,6 @@
 import Mathlib.Tactic.SimpRw
 
+import Validator.Std.Decidable
 import Validator.Std.Hedge
 
 import Validator.Regex.Language
@@ -91,17 +92,16 @@ theorem derive_star {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1: Rul
   rw [unapply_hedge_param_and_flip]
   rw [Regex.Room.derive_star]
 
-theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (label: α) (children: Hedge α):
-  ((List.foldl (derive G Φ) (if Φ p label = true then G.lookup ref else Regex.emptyset) children).null = true)
-  = ((Φ p label = true) /\ ((List.foldl (derive G Φ) (G.lookup ref) children).null = true)) := by
-  generalize (Φ p label) = pred
+theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
+  ((List.foldl (derive G (decideRel Φ)) (if decideRel Φ p label then G.lookup ref else Regex.emptyset) children).null = true)
+  = ((Φ p label = true) /\ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
   generalize (G.lookup ref) = r
   split_ifs
   case pos h =>
-    simp_all only [true_and]
+    simp_all [decideRel]
   case neg h =>
-    simp_all only [Bool.not_eq_true, Bool.false_eq_true, false_and, eq_iff_iff, iff_false]
-    subst h
+    simp_all only [decideRel, decide_eq_true_eq, eq_iff_iff, iff_true, false_and, iff_false,
+      Bool.not_eq_true]
     induction children with
     | nil =>
       simp only [Regex.null, List.foldl_nil, Regex.null]
@@ -110,37 +110,38 @@ theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (label: α
       rw [derive_emptyset]
       rw [ih]
 
-theorem derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (label: α) (children: Hedge α):
+theorem derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
   Language.derive
-    (Rule.denote G (fun s a => Φ s a = true)
+    (Rule.denote G Φ
       (Regex.symbol (pred, ref))
     )
     (Node.mk label children)
   =
     Language.onlyif
-      (Φ pred label = true ∧ Rule.denote G (fun s a => Φ s a = true) (G.lookup ref) children)
-    Language.emptystr
+      (Φ pred label ∧ Rule.denote G Φ (G.lookup ref) children)
+      Language.emptystr
   := by
   funext xs
   rw [Grammar.denote_symbol]
   rw [Language.derive_iff_tree]
-  simp only [Bool.decide_eq_true]
+  simp only [decide_eq_true_eq]
 
 theorem derive_commutes_symbol {α: Type}
   (G: Grammar n φ)
-  (Φ: φ -> α -> Bool)
+  (Φ: φ -> α -> Prop)
+  [DecidableRel Φ]
   (pred: φ)
   (ref: Ref n)
   (x4: Node α)
   (xs: Hedge α)
   (ihr:
     ∀ (r: Grammar.Rule n φ) (x3: Node.DescendantOf x4) (xs: Hedge α),
-        Grammar.Rule.denote G (fun p a => Φ p a) (Grammar.Room.derive G Φ r x3.val) xs
-    <-> Language.derive (Grammar.Rule.denote G (fun p a => Φ p a) r) x3.val xs
+        Grammar.Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x3.val) xs
+    <-> Language.derive (Grammar.Rule.denote G Φ r) x3.val xs
   )
   :
-  Rule.denote G (fun s a => Φ s a = true) (derive G Φ (Regex.symbol (pred, ref)) x4) xs =
-  Language.derive (Rule.denote G (fun s a => Φ s a = true) (Regex.symbol (pred, ref))) x4 xs := by
+  Rule.denote G Φ (derive G (decideRel Φ) (Regex.symbol (pred, ref)) x4) xs =
+  Language.derive (Rule.denote G Φ (Regex.symbol (pred, ref))) x4 xs := by
   cases x4 with
   | mk label children =>
 
@@ -155,6 +156,8 @@ theorem derive_commutes_symbol {α: Type}
 
   simp only [evalif]
   simp only [and_start]
+  simp only [eq_iff_iff, iff_true]
+  rw [<- eq_iff_iff]
   congr
 
   generalize G.lookup ref = r
@@ -188,9 +191,9 @@ theorem revert_param (f g: α -> β):
   subst a
   simp_all only
 
-theorem derive_commutesb_iff {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Grammar.Rule n φ) (x: Node α) (xs: Hedge α):
-  Grammar.Rule.denote G (fun s a => Φ s a) (Grammar.Room.derive G Φ r x) xs
-  <-> Language.derive (Grammar.Rule.denote G (fun s a => Φ s a) r) x xs := by
+theorem derive_commutes_iff {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (r: Grammar.Rule n φ) (x: Node α) (xs: Hedge α):
+  Grammar.Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x) xs
+  <-> Language.derive (Grammar.Rule.denote G Φ r) x xs := by
   rw [<- eq_iff_iff]
   apply revert_param
   induction r with
@@ -209,7 +212,7 @@ theorem derive_commutesb_iff {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool)
     | mk pred ref =>
     let ihr :=
       fun (r: Grammar.Rule n φ) (x7: Node.DescendantOf x) (xs: Hedge α) =>
-        derive_commutesb_iff G Φ r x7 xs
+        derive_commutes_iff G Φ r x7 xs
     rw [derive_commutes_symbol (ihr := ihr) (x4 := x)]
   | or r1 r2 ih1 ih2 =>
     rw [derive_or]
@@ -240,12 +243,20 @@ theorem derive_commutesb_iff {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool)
   decreasing_by
     apply Node.DescendantOf.sizeOf
 
-theorem derive_commutesb {α: Type}
-  (G: Grammar n φ)
-  (Φ: φ -> α -> Bool)
-  (r: Grammar.Rule n φ)
-  (x: Node α):
-  Grammar.Rule.denote G (fun s a => Φ s a) (Grammar.Room.derive G Φ r x)
-  = Language.derive (Grammar.Rule.denote G (fun s a => Φ s a) r) x := by
+theorem derive_commutes (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (r: Rule n φ) (x: Node α):
+  Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x)
+  = Language.derive (Rule.denote G Φ r) x := by
   funext xs
-  rw [derive_commutesb_iff]
+  rw [derive_commutes_iff]
+
+theorem derive_commutesb (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Rule n φ) (x: Node α):
+  Rule.denote G (fun s a => Φ s a) (Grammar.Room.derive G Φ r x)
+  = Language.derive (Rule.denote G (fun s a => Φ s a) r) x := by
+  have h1: (fun s a => Φ s a) = decideRel (fun s a => Φ s a) := by
+    unfold decideRel
+    aesop
+  have h2: (fun s a => Φ s a) = Φ := by
+    rfl
+  nth_rewrite 2 [<- h2]
+  rw [h1]
+  rw [derive_commutes]
