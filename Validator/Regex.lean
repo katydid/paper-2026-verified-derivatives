@@ -9,7 +9,6 @@ import Validator.Regex.LeaveMem
 import Validator.Regex.LeaveSmart
 import Validator.Regex.Map
 import Validator.Regex.Num
-import Validator.Regex.Partial
 import Validator.Regex.Point
 import Validator.Regex.Regex
 import Validator.Regex.RegexID

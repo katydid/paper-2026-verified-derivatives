@@ -5,7 +5,6 @@ import Validator.Regex.Drawer
 import Validator.Regex.Language
 import Validator.Regex.Leave
 import Validator.Regex.Num
-import Validator.Regex.Partial
 import Validator.Regex.Regex
 
 -- room, since we enter and leave
@@ -98,18 +97,6 @@ theorem derives_unapplied_is_map
   simp only [<- Vec.zip_map]
   simp only [<- Symbol.extractFrom_replaceFrom_is_fmap]
 
-theorem derive_is_Partial_derive
-  {σ: Type} (Φ: σ -> Bool)
-  (r: Regex σ):
-  Room.derive Φ r = Regex.Partial.derive Φ r := by
-  unfold Room.derive
-  unfold enter
-  unfold leave
-  simp only
-  simp only [<- Vec.zip_map]
-  rw [<- Symbol.extractFrom_replaceFrom_is_fmap]
-  rw [Regex.Partial.derive_is_point_derive]
-
 theorem derive_is_Regex_derive
   {σ: Type} (Φ: σ -> α -> Bool)
   (r: Regex σ) (a: α):
@@ -153,15 +140,6 @@ theorem derive_star {α: Type} {σ: Type} (Φ: σ -> α -> Bool) (r1: Regex σ) 
   Room.derive (flip Φ a) (star r1) = concat (Room.derive (flip Φ a) r1) (star r1) := by
   repeat rw [derive_is_Regex_derive]
   rw [Regex.derive_star]
-
-theorem derives_is_Partial_map_derive
-  {σ: Type} (Φ: σ -> Bool)
-  (r: Vec (Regex σ) l):
-  Room.derives Φ r = Regex.Partial.map_derive Φ r := by
-  rw [derives_is_map_derive]
-  simp only [derive_is_Partial_derive]
-  unfold Regex.Partial.map_derive
-  congr
 
 theorem derives_unapplied_is_Regex_map_derive
   {σ: Type} {α: Type} (Φ: σ -> α -> Bool)
@@ -210,8 +188,7 @@ theorem derives_distrib_nil:
   rfl
 
 theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ -> α -> Bool) (r: Regex σ) (a: α):
-  Regex.denote (fun s a => Φ s a) (Room.derive (fun s => Φ s a) r)
+  Regex.denote (fun s a => Φ s a) (Room.derive (flip Φ a) r)
   = Language.derive (Regex.denote (fun s a => Φ s a) r) a := by
-  rw [derive_is_Partial_derive]
-  rw [<- Regex.Partial.derive_is_partial_derive]
+  rw [derive_is_Regex_derive]
   rw [<- Regex.derive_commutesb]
