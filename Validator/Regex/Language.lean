@@ -20,45 +20,23 @@ open List (
 
 def Langs (α: Type): Type := List α -> Prop
 
-def emptyset : Langs α :=
-  fun _ => False
+def emptyset : Langs α := fun _ => False
 
-def universal {α: Type} : Langs α :=
-  fun _ => True
+def emptystr : Langs α := fun xs => xs = []
 
-def emptystr {α: Type} : Langs α :=
-  fun xs => xs = []
-
-def char {α: Type} (x : α): Langs α :=
-  fun xs => xs = [x]
-
-def pred {α: Type} (p : α -> Prop): Langs α :=
-  fun xs => ∃ x, xs = [x] /\ p x
-
-def symbol {α: Type} (Φ: σ -> α -> Prop) (s: σ): Langs α :=
+def symbol (Φ: σ -> α -> Prop) (s: σ): Langs α :=
   fun xs => ∃ x, xs = [x] /\ Φ s x
-
-def any {α: Type}: Langs α :=
-  fun xs => ∃ x, xs = [x]
 
 -- onlyif is used as an and to make derive char not require an if statement
 -- (derive (char c) a) w <-> (onlyif (a = c) emptystr)
-def onlyif {α: Type} (cond : Prop) (P : Langs α) : Langs α :=
-  fun xs => cond /\ P xs
+def onlyif (cond : Prop) (P : Langs α) : Langs α := fun xs => cond /\ P xs
 
-def or {α: Type} (P : Langs α) (Q : Langs α) : Langs α :=
-  fun xs => P xs \/ Q xs
+def or (P : Langs α) (Q : Langs α) : Langs α := fun xs => P xs \/ Q xs
 
-def and {α: Type} (P : Langs α) (Q : Langs α) : Langs α :=
-  fun xs => P xs /\ Q xs
+def concat (P : Langs α) (Q : Langs α) : Langs α := fun (xs : List α) =>
+  ∃ n: Fin (xs.length + 1), P (List.take n xs) /\ Q (List.drop n xs)
 
--- alternative definition of concat
-def concat {α: Type} (P : Langs α) (Q : Langs α) : Langs α :=
-  fun (xs : List α) =>
-    ∃ n: Fin (xs.length + 1), P (List.take n xs) /\ Q (List.drop n xs)
-
--- alternative definition of star
-def star {α: Type} (R: Langs α) (xs: List α): Prop :=
+def star (R: Langs α) (xs: List α): Prop :=
   match xs with
   | [] => True
   | (x'::xs') =>
@@ -68,29 +46,15 @@ def star {α: Type} (R: Langs α) (xs: List α): Prop :=
   termination_by xs.length
   decreasing_by
     obtain ⟨n, hn⟩ := n
-    simp
+    simp only [List.drop_succ_cons, List.length_drop, List.length_cons]
     omega
 
-def not {α: Type} (R: Langs α): Langs α :=
-  fun xs => (Not (R xs))
-
 -- attribute [simp] allows these definitions to be unfolded when using the simp tactic.
-attribute [simp] universal emptyset emptystr char onlyif or and
+attribute [simp] emptyset emptystr onlyif or and
 
-example: Langs α := universal
 example: Langs α := emptystr
-example: Langs α := (or emptystr universal)
-example: Langs α := (and emptystr universal)
 example: Langs α := emptyset
 example: Langs α := (star emptyset)
-example: Langs Char := char 'a'
-example: Langs Char := char 'b'
-example: Langs Char := (or (char 'a') emptyset)
-example: Langs Char := (and (char 'a') (char 'b'))
-example: Langs Nat := (and (char 1) (char 2))
-example: Langs Nat := (onlyif True (char 2))
-example: Langs Nat := (concat (char 1) (char 2))
-example: Langs Nat := (pred (fun x => x = 1))
 
 def null {α: Type} (R: Langs α): Prop :=
   R []
@@ -167,10 +131,6 @@ theorem not_null_if_emptyset {α: Type}:
   @null α emptyset -> False :=
   null_iff_emptyset.mp
 
-theorem null_universal {α: Type}:
-  @null α universal = True :=
-  rfl
-
 theorem null_iff_emptystr {α: Type}:
   @null α emptystr <-> True :=
   Iff.intro
@@ -184,42 +144,6 @@ theorem null_if_emptystr {α: Type}:
 theorem null_emptystr {α: Type}:
   @null α emptystr = True := by
   rw [null_iff_emptystr]
-
-theorem null_iff_any {α: Type}:
-  @null α any <-> False :=
-  Iff.intro nofun nofun
-
-theorem not_null_if_any {α: Type}:
-  @null α any -> False :=
-  nofun
-
-theorem null_any {α: Type}:
-  @null α any = False := by
-  rw [null_iff_any]
-
-theorem null_iff_char {α: Type} {c: α}:
-  null (char c) <-> False :=
-  Iff.intro nofun nofun
-
-theorem not_null_if_char {α: Type} {c: α}:
-  null (char c) -> False :=
-  nofun
-
-theorem null_char {α: Type} {c: α}:
-  null (char c) = False := by
-  rw [null_iff_char]
-
-theorem null_iff_pred {α: Type} {p: α -> Prop}:
-  null (pred p) <-> False :=
-  Iff.intro nofun nofun
-
-theorem not_null_if_pred {α: Type} {p: α -> Prop}:
-  null (pred p) -> False :=
-  nofun
-
-theorem null_pred {α: Type} {p: α -> Prop}:
-  null (pred p) = False := by
-  rw [null_iff_pred]
 
 theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ -> α -> Prop} {s: σ}:
   null (symbol Φ s) <-> False :=
@@ -240,10 +164,6 @@ theorem null_or {α: Type} {P Q: Langs α}:
 theorem null_iff_or {α: Type} {P Q: Langs α}:
   null (or P Q) <-> ((null P) \/ (null Q)) := by
   rw [null_or]
-
-theorem null_and {α: Type} {P Q: Langs α}:
-  null (and P Q) = ((null P) /\ (null Q)) :=
-  rfl
 
 theorem null_iff_concat {α: Type} {P Q: Langs α}:
   null (concat P Q) <-> ((null P) /\ (null Q)) := by
@@ -279,22 +199,10 @@ theorem null_star {α: Type} {R: Langs α}:
   null (star R) = True := by
   rw [null_iff_star]
 
-theorem null_not {α: Type} {R: Langs α}:
-  null (not R) = null (Not ∘ R) :=
-  rfl
-
-theorem null_iff_not {α: Type} {R: Langs α}:
-  null (not R) <-> null (Not ∘ R) := by
-  rw [null_not]
-
 -- Theorems: derive
 
 theorem derive_emptyset {α: Type} {a: α}:
   (derive emptyset a) = emptyset :=
-  rfl
-
-theorem derive_universal {α: Type} {a: α}:
-  (derive universal a) = universal :=
   rfl
 
 theorem derive_iff_emptystr {α: Type} {a: α} {w: List α}:
@@ -305,50 +213,6 @@ theorem derive_emptystr {α: Type} {a: α}:
   (derive emptystr a) = emptyset := by
   funext
   rw [derive_iff_emptystr]
-
-theorem derive_iff_char {α: Type} [DecidableEq α] {a: α} {c: α} {w: List α}:
-  (derive (char c) a) w <-> (onlyif (a = c) emptystr) w := by
-  refine Iff.intro ?toFun ?invFun
-  case toFun =>
-    intro D
-    cases D with | refl =>
-    exact ⟨ rfl, rfl ⟩
-  case invFun =>
-    intro ⟨ H1 , H2  ⟩
-    cases H1 with | refl =>
-    cases H2 with | refl =>
-    exact rfl
-
-theorem derive_char {α: Type} [DecidableEq α] {a: α} {c: α}:
-  (derive (char c) a) = (onlyif (a = c) emptystr) := by
-  funext
-  rw [derive_iff_char]
-
-theorem derive_iff_pred {α: Type} {p: α -> Prop} {x: α} {xs: List α}:
-  (derive (pred p) x) xs <-> (onlyif (p x) emptystr) xs := by
-  simp only [derive, derives, singleton_append]
-  simp only [onlyif, emptystr]
-  refine Iff.intro ?toFun ?invFun
-  case toFun =>
-    intro D
-    match D with
-    | Exists.intro x' D =>
-    simp only [cons.injEq] at D
-    match D with
-    | And.intro (And.intro hxx' hxs) hpx =>
-    rw [<- hxx'] at hpx
-    exact And.intro hpx hxs
-  case invFun =>
-    intro ⟨ hpx , hxs  ⟩
-    unfold pred
-    exists x
-    simp only [cons.injEq, true_and]
-    exact And.intro hxs hpx
-
-theorem derive_pred {α: Type} {p: α -> Prop} {x: α}:
-  (derive (pred p) x) = (onlyif (p x) emptystr) := by
-  funext
-  rw [derive_iff_pred]
 
 theorem derive_iff_symbol {α: Type} {Φ: σ -> α -> Prop} {x: α} {xs: List α}:
   (derive (symbol Φ s) x) xs <-> (onlyif (Φ s x) emptystr) xs := by
@@ -378,10 +242,6 @@ theorem derive_symbol {α: Type} {Φ: σ -> α -> Prop} {x: α}:
 
 theorem derive_or {α: Type} {a: α} {P Q: Langs α}:
   (derive (or P Q) a) = (or (derive P a) (derive Q a)) :=
-  rfl
-
-theorem derive_and {α: Type} {a: α} {P Q: Langs α}:
-  (derive (and P Q) a) = (and (derive P a) (derive Q a)) :=
   rfl
 
 theorem derive_onlyif {α: Type} {a: α} {s: Prop} {P: Langs α}:
@@ -416,15 +276,6 @@ theorem derive_star {α: Type} {x: α} {R: Langs α}:
   (derive (star R) x) = (concat (derive R x) (star R)) := by
   funext
   rw [derive_iff_star]
-
-theorem derive_not {α: Type} {x: α} {R: Langs α}:
-  (derive (not R) x) = Not ∘ (derive R x) :=
-  rfl
-
-theorem derive_iff_not {α: Type} {x: α} {R: Langs α} {xs: List α}:
-  (derive (not R) x) xs <-> Not ((derive R x) xs) := by
-  rw [derive_not]
-  rfl
 
 theorem derive_iff_concat {α: Type} {x: α} {P Q: Langs α} {xs: List α}:
   (derive (concat P Q) x) xs <->
@@ -472,18 +323,6 @@ theorem simp_or_emptyset_r_is_l (r: Langs α):
   or r emptyset = r := by
   unfold or
   simp only [emptyset, or_false]
-
-theorem simp_or_universal_l_is_universal (r: Langs α):
-  or universal r = universal := by
-  unfold or
-  simp only [universal, true_or]
-  rfl
-
-theorem simp_or_universal_r_is_universal (r: Langs α):
-  or r universal = universal := by
-  unfold or
-  simp only [universal, or_true]
-  rfl
 
 theorem simp_or_null_l_emptystr_is_l
   (r: Langs α)
@@ -630,210 +469,8 @@ example (r s: Langs α) (H: s = r):
   rw [H]
   ac_rfl
 
-theorem simp_and_emptyset_l_is_emptyset (r: Langs α):
-  and emptyset r = emptyset := by
-  unfold and
-  simp only [emptyset, false_and]
-  rfl
-
-theorem simp_and_emptyset_r_is_emptyset (r: Langs α):
-  and r emptyset = emptyset := by
-  unfold and
-  simp only [emptyset, and_false]
-  rfl
-
-theorem simp_and_universal_l_is_r (r: Langs α):
-  and universal r = r := by
-  unfold and
-  simp only [universal, true_and]
-
-theorem simp_and_universal_r_is_l (r: Langs α):
-  and r universal = r := by
-  unfold and
-  simp only [universal, and_true]
-
-theorem simp_and_null_l_emptystr_is_emptystr
-  (r: Langs α)
-  (nullr: null r):
-  and r emptystr = emptystr := by
-  funext xs
-  simp only [and, emptystr, eq_iff_iff, and_iff_right_iff_imp]
-  intro hxs
-  rw [hxs]
-  exact nullr
-
-theorem simp_and_emptystr_null_r_is_emptystr
-  (r: Langs α)
-  (nullr: null r):
-  and emptystr r = emptystr := by
-  funext xs
-  simp only [null] at nullr
-  simp only [and, emptystr, eq_iff_iff, and_iff_left_iff_imp]
-  intro hxs
-  rw [hxs]
-  exact nullr
-
-theorem simp_and_not_null_l_emptystr_is_emptyset
-  (r: Langs α)
-  (notnullr: Not (null r)):
-  and r emptystr = emptyset := by
-  funext xs
-  simp only [and, emptystr, emptyset, eq_iff_iff, iff_false, not_and]
-  intro hr hxs
-  rw [hxs] at hr
-  contradiction
-
-theorem simp_and_emptystr_not_null_r_is_emptyset
-  (r: Langs α)
-  (notnullr: Not (null r)):
-  and emptystr r = emptyset := by
-  funext xs
-  simp only [and, emptystr, emptyset, eq_iff_iff, iff_false, not_and]
-  intro hxs
-  rw [hxs]
-  exact notnullr
-
-theorem simp_and_idemp (r: Langs α):
-  and r r = r := by
-  unfold and
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  case mp =>
-    intro h
-    cases h
-    assumption
-  case mpr =>
-    intro h
-    exact And.intro h h
-
-theorem simp_and_comm (r s: Langs α):
-  and r s = and s r := by
-  unfold and
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  case mp =>
-    intro h
-    cases h with
-    | intro hr hs =>
-      exact And.intro hs hr
-  case mpr =>
-    intro h
-    cases h with
-    | intro hs hr =>
-      exact And.intro hr hs
-
-theorem simp_and_assoc (r s t: Langs α):
-  and (and r s) t = and r (and s t) := by
-  unfold and
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  case mp =>
-    intro h
-    match h with
-    | And.intro (And.intro h1 h2) h3 =>
-    exact And.intro h1 (And.intro h2 h3)
-  case mpr =>
-    intro h
-    match h with
-    | And.intro h1 (And.intro h2 h3) =>
-    exact And.intro (And.intro h1 h2) h3
-
--- class Associative found in Init/Core.lean in namespace Std
--- It is used by the ac_rfl tactic.
-instance IsAssociative_and {α: Type}: Std.Associative (@and α) :=
-  { assoc := @simp_and_assoc α }
-
--- class Commutative found in Init/Core.lean in namespace Std
--- It is used by the ac_rfl tactic.
-instance IsCommutative_and {α: Type}: Std.Commutative (@and α) :=
-  { comm := @simp_and_comm α }
-
--- class IdempotentOp found in Init/Core.lean in namespace Std
--- It is used by the ac_rfl tactic.
-instance IsIdempotentOp_and {α: Type}: Std.IdempotentOp (@and α) :=
-  { idempotent := simp_and_idemp }
-
-instance IsLawfulCommIdentity_and {α: Type} : Std.LawfulCommIdentity (@and α) (@universal α) where
-  right_id r := simp_and_universal_r_is_l r
-
--- Test that ac_rfl uses the instance of Std.LawfulCommIdentity
-example (r: Langs α):
-  and r universal = r := by
-  ac_rfl
-
--- Test that ac_rfl uses the instance of Std.Commutative
-example (r s: Langs α):
-  and r s = and s r := by
-  ac_rfl
-
--- Test that ac_rfl uses the instance of Std.Associative
-example (r s t: Langs α):
-  and (and r s) t = and r (and s t) := by
-  ac_rfl
-
--- Test that ac_rfl uses the instance of Std.IdempotentOp
-example (r: Langs α):
-  and r (and r r) = r := by
-  ac_rfl
-
--- Test that ac_rfl uses both the instances of Std.Associative and Std.Commutative
-example (a b c d : Langs α):
-  (and a (and b (and c d))) = (and d (and (and b c) a)) := by ac_rfl
-
--- Test that ac_rfl uses both the instances of Std.Associative and Std.Commutative and Std.IdempotentOp
-example (a b c d : Langs α):
-  (and a (and b (and c d))) = (and d (and d (and (and b c) a))) := by ac_rfl
-
 theorem not_not_intro' {p : Prop} (h : p) : ¬ ¬ p :=
   fun hn : (p -> False) => hn h
-
-theorem simp_not_not_is_double_negation
-  (r: Langs α) [DecidablePred r]:
-  not (not r) = r := by
-  unfold not
-  funext xs
-  simp only [eq_iff_iff]
-  exact Decidable.not_not
-
-theorem simp_not_and_demorgen
-  (r s: Langs α) (xs: List α) [Decidable (r xs)] [Decidable (s xs)]:
-  not (and r s) xs = or (not r) (not s) xs := by
-  unfold and
-  unfold or
-  unfold not
-  simp only [eq_iff_iff]
-  exact Decidable.not_and_iff_not_or_not
-
-theorem simp_not_or_demorgen (r s: Langs α):
-  not (or r s) = and (not r) (not s) := by
-  unfold not
-  unfold or
-  unfold and
-  simp only [not_or]
-
-theorem simp_and_not_emptystr_l_not_null_r_is_r
-  (r: Langs α)
-  (notnullr: Not (null r)):
-  and (not emptystr) r = r := by
-  funext xs
-  simp only [and, not, emptystr, eq_iff_iff, and_iff_right_iff_imp]
-  intro hr hxs
-  rw [hxs] at hr
-  contradiction
-
-theorem simp_and_not_null_l_not_emptystr_r_is_l
-  (r: Langs α)
-  (notnullr: Not (null r)):
-  and r (not emptystr) = r := by
-  funext xs
-  simp only [null] at notnullr
-  simp only [and, not, emptystr, eq_iff_iff, and_iff_left_iff_imp]
-  intro hr hxs
-  rw [hxs] at hr
-  contradiction
 
 def onlyif_true {cond: Prop} {l: List α -> Prop} (condIsTrue: cond):
   Language.onlyif cond l = l := by
@@ -856,135 +493,6 @@ def onlyif_false {cond: Prop} {l: List α -> Prop} (condIsFalse: ¬cond):
   case mpr =>
     intro h
     nomatch h
-
-theorem simp_or_and_left_distrib (a b c : Langs α) : and a (or b c) = or (and a b) (and a c) := by
-  unfold and
-  unfold or
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  · case mp =>
-    intro H
-    cases H with
-    | intro Ha Hbc =>
-    cases Hbc with
-    | inl Hb =>
-      apply Or.inl
-      apply And.intro Ha Hb
-    | inr Hc =>
-      apply Or.inr
-      apply And.intro Ha Hc
-  · case mpr =>
-    intro H
-    cases H with
-    | inl Hab =>
-      cases Hab with
-      | intro Ha Hb =>
-        apply And.intro
-        exact Ha
-        apply Or.inl
-        exact Hb
-    | inr Hac =>
-      cases Hac with
-      | intro Ha Hc =>
-        apply And.intro
-        exact Ha
-        apply Or.inr
-        exact Hc
-
-theorem simp_or_and_right_distrib (a b c : Langs α) : and (or a b) c = or (and a c) (and b c) := by
-  unfold and
-  unfold or
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  · case mp =>
-    intro H
-    cases H with
-    | intro Hab Hc =>
-    cases Hab with
-    | inl Ha =>
-      apply Or.inl
-      apply And.intro Ha Hc
-    | inr Hb =>
-      apply Or.inr
-      apply And.intro Hb Hc
-  · case mpr =>
-    intro H
-    cases H with
-    | inl Hac =>
-      cases Hac with
-      | intro Ha Hc =>
-        apply And.intro
-        apply Or.inl
-        exact Ha
-        exact Hc
-    | inr Hbc =>
-      cases Hbc with
-      | intro Hb Hc =>
-        apply And.intro
-        apply Or.inr
-        exact Hb
-        exact Hc
-
-theorem simp_and_or_left_distrib (a b c : Langs α) : or a (and b c) = and (or a b) (or a c) := by
-  unfold and
-  unfold or
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  · case mp =>
-    intro H
-    cases H with
-    | inl H =>
-      apply And.intro
-      · apply Or.inl H
-      · apply Or.inl H
-    | inr H =>
-      cases H with
-      | intro Hb Hc =>
-      apply And.intro
-      · apply Or.inr Hb
-      · apply Or.inr Hc
-  · case mpr =>
-    intro H
-    cases H with
-    | intro Hab Hac =>
-    cases Hab with
-    | inl Ha =>
-      apply Or.inl Ha
-    | inr Hb =>
-      cases Hac with
-      | inl Ha =>
-        apply Or.inl Ha
-      | inr Hc =>
-        apply Or.inr
-        apply And.intro Hb Hc
-
-theorem simp_and_or_right_distrib (a b c : Langs α) : or (and a b) c = and (or a c) (or b c) := by
-  unfold and
-  unfold or
-  funext xs
-  simp only [eq_iff_iff]
-  apply Iff.intro
-  · case mp =>
-    intro H
-    cases H with
-    | inl h => simp_all only [true_or, and_self]
-    | inr h_1 => simp_all only [or_true, and_self]
-  · case mpr =>
-    intro H
-    cases H with
-    | intro Hleft Hright =>
-    cases Hleft with
-    | inl h =>
-      cases Hright with
-      | inl h_1 => simp_all only [and_self, true_or]
-      | inr h_2 => simp_all only [true_and, or_true]
-    | inr h_1 =>
-      cases Hright with
-      | inl h => simp_all only [and_true, or_true]
-      | inr h_2 => simp_all only [or_true]
 
 theorem simp_onlyif_and {α: Type} (cond1 cond2 : Prop) (P : Langs α):
   onlyif (cond1 /\ cond2) P = onlyif cond1 (onlyif cond2 P) := by
