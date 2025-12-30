@@ -87,8 +87,8 @@ theorem denote_sizeOf_concat_right {α: Type} {σ: Type} [SizeOf σ] {p q: Regex
     apply Prod.Lex.left
     assumption
 
-theorem denote_sizeOf_star_left {α: Type} {σ: Type} [SizeOf σ] {p: Regex σ} {xs: Hedge α}:
-  Prod.Lex (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂) (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂) ((List.take n xs), p) (xs, Regex.star p) := by
+theorem denote_sizeOf_star_left {α: Type} {σ: Type} [SizeOf σ] {p: Regex σ} {x: Hedge.Node α} {xs: Hedge α}:
+  Prod.Lex (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂) (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂) (x::(List.take n xs), p) (x::xs, Regex.star p) := by
   have h := Hedge.sizeOf_take n xs
   cases h with
   | inl h =>
@@ -96,6 +96,7 @@ theorem denote_sizeOf_star_left {α: Type} {σ: Type} [SizeOf σ] {p: Regex σ} 
     apply decreasing_star
   | inr h =>
     apply Prod.Lex.left
+    simp only [List.cons.sizeOf_spec, add_lt_add_iff_left]
     assumption
 
 theorem denote_sizeOf_star_right {α: Type} {σ: Type} [SizeOf σ] {p: Regex σ} {x: Hedge.Node α} {xs: Hedge α}:
@@ -138,8 +139,8 @@ def Rule.denote'
     | [] => True
     | (x'::xs') =>
        ∃ (i: Fin xs.length),
-         (Rule.denote' G r1 Φ (List.take (i + 1) (x'::xs')))
-      /\ (Rule.denote' G (Regex.star r1) Φ (List.drop (i + 1) (x'::xs')))
+         (Rule.denote' G r1 Φ (x'::List.take i xs'))
+      /\ (Rule.denote' G (Regex.star r1) Φ (List.drop i xs'))
   termination_by (xs, r)
   decreasing_by
     · apply decreasing_symbol
@@ -239,8 +240,8 @@ theorem unfold_denote_star {α: Type} {φ: Type} (G: Hedge.Grammar n φ) (Φ: φ
     | [] => True
     | (x'::xs') =>
        ∃ (n: Fin xs.length),
-         (Rule.denote' G r Φ (List.take (n + 1) (x'::xs')))
-      /\ (Rule.denote' G (Regex.star r) Φ (List.drop (n + 1) (x'::xs')))) := by
+         (Rule.denote' G r Φ (x'::List.take n xs'))
+      /\ (Rule.denote' G (Regex.star r) Φ (List.drop n xs'))) := by
   cases xs with
   | nil =>
     simp [Rule.denote']
@@ -265,7 +266,7 @@ theorem denote_star_iff' {α: Type} {φ: Type} (G: Hedge.Grammar n φ) (Φ: φ -
     ext n
     rw [<- eq_iff_iff]
     congr
-    simp only [List.length_cons, List.drop_succ_cons, eq_iff_iff]
+    simp only [List.length_cons, eq_iff_iff]
     rw [<- denote_star_iff']
   termination_by xs.length
   decreasing_by

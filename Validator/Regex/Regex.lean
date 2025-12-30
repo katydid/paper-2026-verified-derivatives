@@ -18,6 +18,10 @@ instance [DecidableEq σ]: BEq (Regex σ) := inferInstance
 
 instance [Hashable σ]: Hashable (Regex σ) := inferInstance
 
+def Regex.null {σ: Type}: (r: Regex σ) -> Bool
+  | emptyset => false | emptystr => true | symbol _ => false | star _ => true
+  | or p q => (null p || null q) | concat p q => (null p && null q)
+
 namespace Regex
 
 -- A regular expression is denoted as usual, expect that allow the user to inject the denotation of the generic symbol, Φ.
@@ -31,15 +35,10 @@ def denote (Φ : σ -> α -> Prop) (r: Regex σ): (xs: List α) -> Prop :=
   | concat p q => Language.concat (denote Φ p) (denote Φ q)
   | star p => Language.star (denote Φ p)
 
-def null {σ: Type}: (r: Regex σ) -> Bool
-  | emptyset => false | emptystr => true | symbol _ => false | star _ => true
-  | or p q => (null p || null q) | concat p q => (null p && null q)
-
 def unescapable :(x: Regex σ) -> Bool
   | emptyset => true | _ => false
 
-def onlyif (cond: Prop) [dcond: Decidable cond] (x: Regex σ): Regex σ :=
-  if cond then x else emptyset
+def onlyif (cond: Prop) [dcond: Decidable cond] (x: Regex σ): Regex σ := if cond then x else emptyset
 
 theorem denote_onlyif {α: Type} (Φ : σ -> α -> Prop) (condition: Prop) [dcond: Decidable condition] (r: Regex σ):
   denote Φ (onlyif condition r) = Language.onlyif condition (denote Φ r) := by
@@ -59,17 +58,18 @@ theorem denote_onlyif {α: Type} (Φ : σ -> α -> Prop) (condition: Prop) [dcon
     intro hc'
     contradiction
 
-def derive {σ: Type} {α: Type} (Φ: σ -> α -> Bool) (r: Regex σ) (a: α): Regex σ :=
-  match r with
-  | emptyset => emptyset
-  | emptystr => emptyset
+end Regex
+
+def Regex.derive (Φ: σ -> α -> Bool) (r: Regex σ) (a: α): Regex σ := match r with
+  | emptyset => emptyset | emptystr => emptyset
   | symbol s => onlyif (Φ s a) emptystr
   | or r1 r2 => or (derive Φ r1 a) (derive Φ r2 a)
-  | concat r1 r2 =>
-    or
-      (concat (derive Φ r1 a) r2)
-      (onlyif (null r1) (derive Φ r2 a))
+  | concat r1 r2 => or
+    (concat (derive Φ r1 a) r2)
+    (onlyif (null r1) (derive Φ r2 a))
   | star r1 => concat (derive Φ r1 a) (star r1)
+
+namespace Regex
 
 #guard
   derive (· == ·) (Regex.or (Regex.symbol 1) (Regex.symbol 2)) 1
