@@ -100,13 +100,13 @@ theorem derive_star {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1: Rul
 
 theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
   ((List.foldl (derive G (decideRel Φ)) (if decideRel Φ p label then G.lookup ref else Regex.emptyset) children).null = true)
-  = ((Φ p label = true) /\ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
+  = (Φ p label /\ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
   generalize (G.lookup ref) = r
   split_ifs
   case pos h =>
     simp_all [decideRel]
   case neg h =>
-    simp_all only [decideRel, decide_eq_true_eq, eq_iff_iff, iff_true, false_and, iff_false,
+    simp_all only [decideRel, decide_eq_true_eq, eq_iff_iff, false_and, iff_false,
       Bool.not_eq_true]
     induction children with
     | nil =>
@@ -146,31 +146,23 @@ theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [Dec
     rw [Grammar.denote_emptyset]
     rw [Language.derive_emptystr]
   | symbol s =>
-    cases s with
-    | mk pred ref =>
-
-    cases x with
-    | mk label children =>
-
-    rw [derive_denote_symbol_is_onlyif]
+    obtain ⟨pred, ref⟩ := s
+    obtain ⟨label, children⟩ := x
 
     rw [derive_symbol]
-    simp only
-    rw [Grammar.denote_onlyif]
 
+    rw [derive_denote_symbol_is_onlyif]
+    rw [Grammar.denote_onlyif]
     rw [Grammar.denote_emptystr]
     congr
 
     simp only [evalif]
     simp only [and_start]
-    simp only [eq_iff_iff, iff_true]
-    rw [<- eq_iff_iff]
     congr
 
     generalize G.lookup ref = r
-    have ihr :=
-      fun (x: Node α) (hx: x ∈ children) r' =>
-        derive_commutes (G := G) (Φ := Φ) (x := x) (r := r')
+    have ihr := fun r' x (hx: x ∈ children) =>
+      derive_commutes G Φ r' x
     induction children generalizing r with
     | nil =>
       simp only [List.foldl_nil]
@@ -180,10 +172,11 @@ theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [Dec
       rw [ihxs]
       · rw [ihr]
         · rfl
-        · simp_all
-      · intro x hxs r'
+        · simp only [List.mem_cons, true_or]
+      · intro x r' hxs
         rw [ihr]
-        aesop
+        simp only [List.mem_cons]
+        apply Or.inr hxs
   | or r1 r2 ih1 ih2 =>
     rw [Grammar.Room.derive_or]
     rw [Grammar.denote_or]
