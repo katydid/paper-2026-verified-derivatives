@@ -4,7 +4,6 @@ import Validator.Regex.Enter
 import Validator.Regex.Extract
 import Validator.Regex.Language
 import Validator.Regex.Leave
-import Validator.Regex.LeaveSmart
 import Validator.Regex.Map
 import Validator.Regex.Num
 import Validator.Regex.Point

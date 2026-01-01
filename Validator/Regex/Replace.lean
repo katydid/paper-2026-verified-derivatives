@@ -19,9 +19,6 @@ end Regex
 
 namespace Regex.Symbol
 
-def replacesFrom (rs: Vec (RegexID n) l) (xs: Vec σ n): Vec (Regex σ) l :=
-  Vec.map rs (fun r => replaceFrom r xs)
-
 theorem replace_cast_both (r: RegexID n) (xs: Vec σ n) (h: n = l):
   replace r xs (by omega) = replace (RegexID.cast r h) (Vec.cast xs h) (by omega) := by
   subst h
@@ -121,20 +118,6 @@ theorem replace_regexid_add (r: RegexID n) (xs: Vec σ (n + l)):
     generalize_proofs h1 h2 at *
     rw [ih1]
     rfl
-
-theorem replacesFrom_cast_both (rs: Vec (RegexID n) l) (ss: Vec σ n) (h: n = m):
-  replacesFrom rs ss =
-  replacesFrom (RegexID.casts rs h) (Vec.cast ss h) := by
-  subst h
-  simp only [Vec.cast_rfl]
-  simp only [RegexID.casts_rfl]
-
-theorem replacesFrom_cons (rs: Vec (RegexID n) l) (xs: Vec σ n):
-  replacesFrom (Vec.cons r rs) xs
-  = Vec.cons (replaceFrom r xs) (replacesFrom rs xs)
-  := by
-  simp only [replacesFrom]
-  simp only [Vec.map]
 
 theorem replaceFrom_append (e: RegexID n) {xs: Vec α n} {ys: Vec α m}:
   replaceFrom (RegexID.cast_add m e) (Vec.append xs ys)
