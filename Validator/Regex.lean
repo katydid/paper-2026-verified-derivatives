@@ -1,4 +1,3 @@
-import Validator.Regex.Compress
 import Validator.Regex.Drawer
 import Validator.Regex.Enter
 import Validator.Regex.Extract

@@ -71,5 +71,5 @@ theorem map_null {σ} (Φ: σ -> Bool) (r: Regex σ):
   | star r1 ih1 =>
     simp only [map, Regex.null]
 
-def maps (rs: Vec (Regex α) l) (f: α -> β): Vec (Regex β) l :=
+def maps (rs: Vector (Regex α) l) (f: α -> β): Vector (Regex β) l :=
   Vec.map rs (fun r => Regex.map r f)

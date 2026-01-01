@@ -1,5 +1,3 @@
-import Mathlib.Tactic.Linarith -- split_ands
-
 namespace Language
 
 def Langs (α: Type): Type := List α -> Prop

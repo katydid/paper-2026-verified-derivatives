@@ -8,8 +8,8 @@ namespace Regex
 
 def leave
   (r: Regex σ)
-  (ps: Vec Bool (Symbol.num r))
+  (ps: Vector Bool (Symbol.num r))
   : Regex σ :=
-  let points: Vec (σ × Bool) (Symbol.num r) := Vec.zip (Symbol.extractFrom r).2 ps
+  let points: Vector (σ × Bool) (Symbol.num r) := Vec.zip (Symbol.extractFrom r).2 ps
   let replaced: Regex (σ × Bool) := Symbol.replaceFrom (Symbol.extractFrom r).1 points
   Regex.Point.derive replaced

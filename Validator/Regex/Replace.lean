@@ -4,34 +4,34 @@ import Validator.Regex.RegexID
 
 namespace Regex
 
-def Symbol.replace (r: RegexID n) (xs: Vec σ l) (h: n <= l): Regex σ :=
+def Symbol.replace (r: RegexID n) (xs: Vector σ l) (h: n <= l): Regex σ :=
   match r with
   | emptyset => emptyset | emptystr => emptystr
-  | symbol ⟨s, hs⟩ => symbol (Vec.get xs (Fin.mk s (by omega)))
+  | symbol ⟨s, hs⟩ => symbol (Vector.get xs (Fin.mk s (by omega)))
   | or r1 r2 => or (replace r1 xs h) (replace r2 xs h)
   | concat r1 r2 => concat (replace r1 xs h) (replace r2 xs h)
   | star r1 => star (replace r1 xs h)
 
-def Symbol.replaceFrom (r: RegexID n) (xs: Vec σ n): Regex σ :=
+def Symbol.replaceFrom (r: RegexID n) (xs: Vector σ n): Regex σ :=
   replace r xs (Nat.le_refl n)
 
 end Regex
 
 namespace Regex.Symbol
 
-theorem replace_cast_both (r: RegexID n) (xs: Vec σ n) (h: n = l):
+theorem replace_cast_both (r: RegexID n) (xs: Vector σ n) (h: n = l):
   replace r xs (by omega) = replace (RegexID.cast r h) (Vec.cast xs h) (by omega) := by
   subst h
   simp only [Vec.cast_rfl]
   rfl
 
-theorem replace_cast_symbols (r: RegexID n) (xs: Vec σ n) (h: n = l):
+theorem replace_cast_symbols (r: RegexID n) (xs: Vector σ n) (h: n = l):
   replace r xs (by omega) = replace r (Vec.cast xs h) (by omega) := by
   subst h
   simp only [Vec.cast_rfl]
 
-theorem replace_take (r: RegexID n) (xs: Vec σ (n + l)):
-  replace r (Vec.take n xs) (by omega) = replace r xs (by omega):= by
+theorem replace_take (r: RegexID n) (xs: Vector σ (n + l)):
+  replace r (Vector.take xs n) (by omega) = replace r xs (by omega):= by
   induction r with
   | emptyset =>
     simp only [replace]
@@ -62,7 +62,7 @@ theorem replace_take (r: RegexID n) (xs: Vec σ (n + l)):
     generalize_proofs h1 at *
     rw [<- ih1]
 
-theorem replace_regexid_add (r: RegexID n) (xs: Vec σ (n + l)):
+theorem replace_regexid_add (r: RegexID n) (xs: Vector σ (n + l)):
   replace r xs (by omega) = replace (RegexID.cast_add l r) xs (by omega):= by
   generalize_proofs h1 h2
   induction r with

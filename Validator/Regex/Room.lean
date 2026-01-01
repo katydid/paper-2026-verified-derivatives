@@ -18,14 +18,14 @@ def derive_pretty {σ: Type} (Φ: σ -> Bool) (r: Regex σ): Regex σ :=
   leave r (Vec.map (enter r) Φ)
 
 def derive_distrib {σ: Type}
-  (ps: {n: Nat} -> Vec σ n -> Vec Bool n) (r: Regex σ): Regex σ :=
-  let symbols: Vec σ (Symbol.num r) := enter r
-  let pred_results: Vec Bool (Symbol.num r) := ps symbols
+  (ps: {n: Nat} -> Vector σ n -> Vector Bool n) (r: Regex σ): Regex σ :=
+  let symbols: Vector σ (Symbol.num r) := enter r
+  let pred_results: Vector Bool (Symbol.num r) := ps symbols
   leave r pred_results
 
 def derive_unapplied {σ: Type} {α: Type} (Φ: σ -> α -> Bool) (r: Regex σ) (a: α): Regex σ :=
-  let symbols: Vec σ (Symbol.num r) := enter r
-  let pred_results: Vec Bool (Symbol.num r) := Vec.map symbols (flip Φ a)
+  let symbols: Vector σ (Symbol.num r) := enter r
+  let pred_results: Vector Bool (Symbol.num r) := Vec.map symbols (flip Φ a)
   leave r pred_results
 
 theorem derive_is_Regex_derive (Φ: σ -> α -> Bool) (r: Regex σ) (a: α):

@@ -24,18 +24,10 @@ end Hedge
 
 namespace Hedge.Grammar
 
-abbrev Rules (n: Nat) (φ: Type) (l: Nat) := Vec (Rule n φ) l
+abbrev Symbols n φ l := Vector (Symbol n φ) l
 
-abbrev Symbols n φ l := Vec (Symbol n φ) l
-
-def hashVector [Hashable α] (xs: Vec α n): UInt64 :=
+def hashVector [Hashable α] (xs: Vector α n): UInt64 :=
   hash xs.toList
 
-instance (α: Type) (n: Nat) [Hashable α] : Hashable (Vec α n) where
+instance (α: Type) (n: Nat) [Hashable α] : Hashable (Vector α n) where
   hash := hashVector
-
-def hashRules {n: Nat} {φ: Type} {l: Nat} [Hashable φ] (xs: Rules n φ l): UInt64 :=
-  hash xs.toList
-
-instance (n: Nat) (φ: Type) (l: Nat) [Hashable φ] : Hashable (Rules n φ l) where
-  hash := hashRules

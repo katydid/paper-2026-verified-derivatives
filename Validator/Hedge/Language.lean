@@ -45,7 +45,17 @@ theorem tree_exists_is_tree_match:
       simp only [cons.injEq, and_true, eq_iff_iff]
       cases x with
       | mk label children =>
-      simp only [Hedge.Node.mk.injEq, ↓existsAndEq, and_true, exists_eq_left']
+      simp only [Hedge.Node.mk.injEq]
+      apply Iff.intro
+      case mp =>
+        intro h
+        obtain ⟨label1, children1, ⟨h1, h2⟩, h3⟩ := h
+        subst_vars
+        exact h3
+      case mpr =>
+        intro ⟨h1, h2⟩
+        exists label
+        exists children
     | cons x' xs =>
       simp only [cons.injEq, reduceCtorEq, and_false, false_and, exists_const, exists_false]
 

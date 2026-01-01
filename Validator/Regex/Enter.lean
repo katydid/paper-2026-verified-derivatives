@@ -6,5 +6,5 @@ import Validator.Regex.Regex
 
 namespace Regex
 
-def enter (x: Regex σ): Vec σ (Symbol.num x) :=
+def enter (x: Regex σ): Vector σ (Symbol.num x) :=
   (Symbol.extractFrom x).2

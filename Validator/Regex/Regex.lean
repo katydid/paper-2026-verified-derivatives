@@ -75,7 +75,7 @@ namespace Regex
   derive (· == ·) (Regex.or (Regex.symbol 1) (Regex.symbol 2)) 1
   = Regex.or Regex.emptystr Regex.emptyset
 
-def map_derive (Φ: σ -> α -> Bool) (rs: Vec (Regex σ) l) (a: α): Vec (Regex σ) l :=
+def map_derive (Φ: σ -> α -> Bool) (rs: Vector (Regex σ) l) (a: α): Vector (Regex σ) l :=
   Vec.map rs (fun r => derive Φ r a)
 
 def fold_derive (Φ: σ -> α -> Bool) (r: Regex σ) (xs: List α): Regex σ :=
