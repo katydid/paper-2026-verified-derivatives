@@ -12,11 +12,11 @@ import Validator.Hedge.Language
 namespace Hedge
 
 def Grammar.Room.derive
-  (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Rule n φ) (node: Node α): Rule n φ :=
-  Regex.Room.derive (fun ((pred, ref): Symbol n φ) =>
+  (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Regex (φ × Ref n)) (node: Node α): Regex (φ × Ref n) :=
+  Regex.Room.derive (fun ((pred, ref): (φ × Ref n)) =>
     let ⟨label, children⟩ := node
-    let childr: Rule n φ := if Φ pred label then G.lookup ref else Regex.emptyset
-    Regex.null (List.foldl (derive G Φ) childr children)
+    let childr: Regex (φ × Ref n) := if Φ pred label then G.lookup ref else Regex.emptyset
+    Regex.null (List.foldl (Grammar.Room.derive G Φ) childr children)
   ) r
 
 end Hedge
@@ -25,15 +25,15 @@ namespace Hedge.Grammar.Room
 
 theorem unapply_hedge_param_and_flip
   (G: Grammar n φ) (Φ: φ -> α -> Bool) (node: Node α):
-  (fun ((pred, ref): Symbol n φ) =>
+  (fun ((pred, ref): (φ × Ref n)) =>
     let ⟨label, children⟩ := node
-    let childr: Rule n φ := if Φ pred label then G.lookup ref else Regex.emptyset
+    let childr: Regex (φ × Ref n) := if Φ pred label then G.lookup ref else Regex.emptyset
     Regex.null (List.foldl (derive G Φ) childr children)
   )
   =
-  (flip fun ((pred, ref): Symbol n φ) (node': Node α) =>
+  (flip fun ((pred, ref): (φ × Ref n)) (node': Node α) =>
     let ⟨label, children⟩ := node'
-    let childr: Rule n φ := if Φ pred label then G.lookup ref else Regex.emptyset
+    let childr: Regex (φ × Ref n) := if Φ pred label then G.lookup ref else Regex.emptyset
     Regex.null (List.foldl (derive G Φ) childr children)
   ) node := by
   rfl
@@ -66,7 +66,7 @@ theorem derive_symbol {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (a: No
   simp only [Regex.derive]
 
 
-theorem derive_or {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1 r2: Rule n φ) (a: Node α):
+theorem derive_or {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1 r2: Regex (φ × Ref n)) (a: Node α):
   Grammar.Room.derive G Φ (Regex.or r1 r2) a
   = Regex.or (Grammar.Room.derive G Φ r1 a) (Grammar.Room.derive G Φ r2 a) := by
   unfold Grammar.Room.derive
@@ -74,7 +74,7 @@ theorem derive_or {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1 r2: Ru
   repeat rw [Regex.Room.derive_is_Regex_derive]
   simp only [Regex.derive]
 
-theorem Grammar.Room.derive_concat {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1 r2: Rule n φ) (a: Node α):
+theorem Grammar.Room.derive_concat {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1 r2: Regex (φ × Ref n)) (a: Node α):
   Grammar.Room.derive G Φ (Regex.concat r1 r2) a
     = Regex.or
       (Regex.concat (Grammar.Room.derive G Φ r1 a) r2)
@@ -84,7 +84,7 @@ theorem Grammar.Room.derive_concat {α: Type} (G: Grammar n φ) (Φ: φ -> α ->
   repeat rw [Regex.Room.derive_is_Regex_derive]
   simp only [Regex.derive]
 
-theorem derive_star {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1: Rule n φ) (a: Node α):
+theorem derive_star {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Bool) (r1: Regex (φ × Ref n)) (a: Node α):
   Grammar.Room.derive G Φ (Regex.star r1) a
   = Regex.concat (Grammar.Room.derive G Φ r1 a) (Regex.star r1) := by
   unfold Grammar.Room.derive
@@ -126,7 +126,7 @@ theorem derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n φ) (Φ: φ -> �
   rw [Language.derive_iff_tree]
   simp only [decide_eq_true_eq]
 
-theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (r: Rule n φ) (x: Node α):
+theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (x: Node α):
   Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x)
   = Language.derive (Rule.denote G Φ r) x := by
   induction r with
@@ -199,7 +199,7 @@ theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ -> α -> Prop) [Dec
   decreasing_by
     apply Node.sizeOf_children hx
 
-theorem derive_commutesb (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Rule n φ) (x: Node α):
+theorem derive_commutesb (G: Grammar n φ) (Φ: φ -> α -> Bool) (r: Regex (φ × Ref n)) (x: Node α):
   Rule.denote G (fun s a => Φ s a) (Grammar.Room.derive G Φ r x)
   = Language.derive (Rule.denote G (fun s a => Φ s a) r) x := by
   have h1: (fun s a => Φ s a) = decideRel (fun s a => Φ s a) := by

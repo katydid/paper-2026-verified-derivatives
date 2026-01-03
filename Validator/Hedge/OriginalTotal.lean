@@ -70,7 +70,7 @@ theorem decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (l
 
 def Rule.derive
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
-  (r: Hedge.Grammar.Rule n φ) (x: Hedge.Node α): Hedge.Grammar.Rule n φ :=
+  (r: Regex (φ × Ref n)) (x: Hedge.Node α): Regex (φ × Ref n) :=
   match r with
   | Regex.emptyset => Regex.emptyset
   | Regex.emptystr => Regex.emptyset
@@ -115,12 +115,12 @@ def Rule.derive
 
 def Rule.derive'
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
-  (r: Hedge.Grammar.Rule n φ) (x: Hedge.Node α): Hedge.Grammar.Rule n φ :=
+  (r: Regex (φ × Ref n)) (x: Hedge.Node α): Regex (φ × Ref n) :=
   Rule.derive G (fun p a => Φ p a) r x
 
 def validate
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
-  (r: Hedge.Grammar.Rule n φ) (hedge: Hedge α): Bool :=
+  (r: Regex (φ × Ref n)) (hedge: Hedge α): Bool :=
   Regex.null (List.foldl (Rule.derive' G Φ) r hedge)
 
 def run [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=

@@ -9,10 +9,10 @@ import Validator.Hedge.Types
 
 namespace Hedge.Grammar
 
-def lookup {n: Nat} {φ: Type} (G: Grammar n φ) (ref: Ref n): Rule n φ :=
+def lookup {n: Nat} {φ: Type} (G: Grammar n φ) (ref: Ref n): Regex (φ × Ref n) :=
   Vector.get G.prods ref
 
-def singleton (x: Rule 0 φ): Grammar 0 φ  :=
+def singleton (x: Regex (φ × Ref 0)): Grammar 0 φ  :=
   Grammar.mk x #v[]
 
 def emptyset: Grammar 0 φ :=
