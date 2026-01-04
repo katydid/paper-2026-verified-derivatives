@@ -126,7 +126,8 @@ theorem derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n φ) (Φ: φ → 
   rw [Language.derive_iff_tree]
   simp only [decide_eq_true_eq]
 
-theorem derive_commutes {α: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (x: Node α):
+theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ]
+  (r: Regex (φ × Ref n)) (x: Node α):
   Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x)
   = Language.derive (Rule.denote G Φ r) x := by
   induction r with

@@ -230,8 +230,10 @@ theorem extractAcc_replaceLE_is_fmap (r: Regex α) (acc: Vector α l) (f: α -> 
   rw [<- replace]
   rw [<- extractAcc_replace_is_fmap]
 
-theorem extract_replace_is_map (r: Regex α) (f: α -> β):
+lemma extract_replace_is_map:
+  ∀ (r: Regex α) (f: α -> β),
   Regex.map r f = replace (extract r).1 (Vector.map f (extract r).2) := by
+  intro r f
   simp only [extract]
   simp only [replace]
   rw [Vector.map_cast]
