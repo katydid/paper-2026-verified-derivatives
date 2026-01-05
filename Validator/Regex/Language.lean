@@ -14,8 +14,9 @@ def Lang.star (R: Lang α) (xs: List α): Prop :=
   | (x::xs') => ∃ (n: Fin xs.length),
       R (x::List.take n xs') /\ Lang.star R (List.drop n xs')
   termination_by xs.length
-  decreasing_by
-    simp only [List.length_drop, List.length_cons]; omega
+
+def Lang.derive (R: Lang α) (x: α): Lang α :=
+  fun (xs: List α) => R (x :: xs)
 
 namespace Lang
 
@@ -48,9 +49,6 @@ def derives {α: Type} (R: Lang α) (xs: List α): Lang α :=
 
 def derive' {α: Type} (R: Lang α) (x: α): Lang α :=
   derives R [x]
-
-def derive {α: Type} (R: Lang α) (x: α): Lang α :=
-  fun (xs: List α) => R (x :: xs)
 
 attribute [simp] null derive derives derive'
 

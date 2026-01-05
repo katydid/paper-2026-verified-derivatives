@@ -115,20 +115,22 @@ theorem denote_sizeOf_star_right {α: Type} {σ: Type} [SizeOf σ] {p: Regex σ}
 -- Lang.or, Lang.concat and Lang.star are unfolded to help with the termination proof.
 -- Φ needs to be the last parameter, so that simp only works on this function when the parameter r is provided.
 def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
-  (r: Regex (φ × Ref n)) (nodes: Hedge α): Prop := match r with
+  (r: Regex (φ × Ref n)) (nodes: Hedge α): Prop :=
+  match r with
   | Regex.emptyset => False
   | Regex.emptystr => nodes = []
   | Regex.symbol (pred, ref) => match nodes with
-    | [node] => (Φ pred node.getLabel) /\ denote G Φ (G.lookup ref) node.getChildren
+    | [node] => (Φ pred node.getLabel)
+                /\ denote G Φ (G.lookup ref) node.getChildren
     | _ => False
   | Regex.or r1 r2 => (denote G Φ r1 nodes) \/ (denote G Φ r2 nodes)
   | Regex.concat r1 r2 => ∃ (i: Fin (nodes.length + 1)),
       (denote G Φ r1 (List.take i nodes)) /\ (denote G Φ r2 (List.drop i nodes))
   | Regex.star r1 => match nodes with
     | [] => True
-    | (node'::nodes') => ∃ (i: Fin nodes.length),
-         (denote G Φ r1 (node'::List.take i nodes'))
-      /\ (denote G Φ (Regex.star r1) (List.drop i nodes'))
+    | (node::nodes') => ∃ (i: Fin nodes.length),
+                        (denote G Φ r1 (node::List.take i nodes'))
+                        /\ (denote G Φ (Regex.star r1) (List.drop i nodes'))
   termination_by (nodes, r)
   decreasing_by
     · apply decreasing_symbol

@@ -22,18 +22,23 @@ def Regex.null: (r: Regex σ) → Bool
   | emptyset => false | emptystr => true | symbol _ => false | star _ => true
   | or p q => (null p || null q) | concat p q => (null p && null q)
 
-namespace Regex
-
--- A regular expression is denoted as usual, expect that allow the user to inject the denotation of the generic symbol, Φ.
--- This allows us to handle generic predicates or even trees, without extending the original regular expression with new operators.
-def denote (Φ : σ → α → Prop) (r: Regex σ): (xs: List α) → Prop :=
+def Regex.denote (Φ : σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
   match r with
-  | emptyset => Lang.emptyset
-  | emptystr => Lang.emptystr
-  | symbol s => Lang.symbol Φ s
-  | or p q => Lang.or (denote Φ p) (denote Φ q)
-  | concat p q => Lang.concat (denote Φ p) (denote Φ q)
-  | star p => Lang.star (denote Φ p)
+  | emptyset => False
+  | emptystr => xs = []
+  | symbol s => match xs with
+    | [x] => Φ s x | _ => False
+  | or r1 r2 => (denote Φ r1 xs) \/ (denote Φ r2 xs)
+  | concat r1 r2 => ∃ (i: Fin (xs.length + 1)),
+      (denote Φ r1 (List.take i xs)) /\ (denote Φ r2 (List.drop i xs))
+  | star r1 => match xs with
+    | [] => True
+    | (x::xs') => ∃ (i: Fin xs.length),
+                        (denote Φ r1 (x::List.take i xs'))
+                        /\ (denote Φ (Regex.star r1) (List.drop i xs'))
+  termination_by (r, xs.length)
+
+namespace Regex
 
 def unescapable :(x: Regex σ) → Bool
   | emptyset => true | _ => false
@@ -54,7 +59,6 @@ theorem denote_onlyif {α: Type} (Φ : σ → α → Prop) (condition: Prop) [dc
   case neg hc =>
     simp only [eq_iff_iff]
     rw [denote]
-    rw [Lang.emptyset]
     simp only [false_iff, not_and]
     intro hc'
     contradiction
@@ -157,15 +161,32 @@ theorem derive_star {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ
 
 theorem denote_emptyset {α: Type} {σ: Type} (Φ: σ → α → Prop):
   denote Φ emptyset = Lang.emptyset := by
-  simp only [denote]
+  funext xs
+  simp only [denote, Lang.emptyset]
 
 theorem denote_emptystr {α: Type} {σ: Type} (Φ: σ → α → Prop):
   denote Φ emptystr = Lang.emptystr := by
-  simp only [denote]
+  funext xs
+  simp only [denote, Lang.emptystr]
 
 theorem denote_symbol {α: Type} {σ: Type} (Φ: σ → α → Prop) (s: σ):
   denote Φ (symbol s) = Lang.symbol Φ s := by
-  simp only [denote]
+  funext xs
+  cases xs with
+  | nil =>
+    simp only [denote, Lang.symbol]
+    -- aesop?
+    simp_all only [List.ne_cons_self, false_and, exists_false]
+  | cons x xs =>
+    cases xs with
+    | nil =>
+      simp only [denote, Lang.symbol]
+      -- aesop?
+      simp_all only [List.cons.injEq, and_true, exists_eq_left']
+    | cons x' xs =>
+      simp only [denote, Lang.symbol]
+      -- aesop?
+      simp_all only [List.cons.injEq, reduceCtorEq, and_false, false_and, exists_false]
 
 theorem denote_or {α: Type} {σ: Type} (Φ: σ → α → Prop) (p q: Regex σ):
   denote Φ (or p q) = Lang.or (denote Φ p) (denote Φ q) := by
@@ -175,53 +196,73 @@ theorem denote_or {α: Type} {σ: Type} (Φ: σ → α → Prop) (p q: Regex σ)
 theorem denote_concat {α: Type} {σ: Type} (Φ: σ → α → Prop) (p q: Regex σ):
   denote Φ (concat p q) = Lang.concat (denote Φ p) (denote Φ q) := by
   funext
-  simp only [denote]
+  simp only [denote, Lang.concat]
 
-theorem denote_star' {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex σ) (xs: List α):
+theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex σ) (xs: List α):
   denote Φ (star r) xs ↔ Lang.star (denote Φ r) xs := by
-  simp only [denote]
+  cases xs with
+  | nil =>
+    simp only [denote, Lang.star]
+  | cons x xs =>
+    simp only [denote, Lang.star]
+    apply Iff.intro
+    case mp =>
+      intro h
+      obtain ⟨⟨i, hi⟩, h1, h2⟩ := h
+      exists ⟨i, hi⟩
+      apply And.intro h1
+      rw [<- (denote_star_iff Φ r (List.drop i xs))]
+      simp only at h2
+      exact h2
+    case mpr =>
+      intro h
+      obtain ⟨⟨i, hi⟩, h1, h2⟩ := h
+      exists ⟨i, hi⟩
+      apply And.intro h1
+      rw [(denote_star_iff Φ r (List.drop i xs))]
+      simp only at h2
+      exact h2
+  termination_by xs.length
 
 theorem denote_star {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex σ):
   denote Φ (star r) = Lang.star (denote Φ r) := by
-  simp only [denote]
+  funext xs
+  rw [denote_star_iff]
 
 -- Commutes proofs
 
 theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex σ):
   ((null r) = true) = Lang.null (denote Φ r) := by
+  unfold Lang.null
   induction r with
   | emptyset =>
     unfold denote
-    rw [Lang.null_emptyset]
     unfold null
     apply Bool.false_eq_true
   | emptystr =>
     unfold denote
-    rw [Lang.null_emptystr]
     unfold null
     simp only
   | symbol p =>
     unfold denote
-    rw [Lang.null_symbol]
     unfold null
     apply Bool.false_eq_true
   | or p q ihp ihq =>
     unfold denote
-    rw [Lang.null_or]
     unfold null
     rw [<- ihp]
     rw [<- ihq]
     rw [Bool.or_eq_true]
   | concat p q ihp ihq =>
     unfold denote
-    rw [Lang.null_concat]
     unfold null
-    rw [<- ihp]
-    rw [<- ihq]
-    rw [Bool.and_eq_true]
+    rw [Bool.and_eq_true p.null q.null]
+    rw [ihp]
+    rw [ihq]
+    simp only [List.length_nil, Nat.reduceAdd, Fin.val_eq_zero, List.take_nil, List.drop_nil,
+      exists_const]
   | star r ih =>
     unfold denote
-    rw [Lang.null_star]
     unfold null
     simp only
 
@@ -229,26 +270,26 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
   denote Φ (derive (fun s a => Φ s a) r x) = Lang.derive (denote Φ r) x := by
   induction r with
   | emptyset =>
-    simp only [denote, derive]
+    simp only [derive, denote_emptyset]
     rw [Lang.derive_emptyset]
   | emptystr =>
-    simp only [denote, derive]
+    simp only [derive, denote_emptyset, denote_emptystr]
     rw [Lang.derive_emptystr]
   | symbol p =>
-    simp only [denote]
+    simp only [denote_symbol]
     rw [Lang.derive_symbol]
     unfold derive
     rw [denote_onlyif]
-    simp only [denote]
+    simp only [denote_emptystr]
     simp only [decide_eq_true_eq]
   | or p q ihp ihq =>
-    simp only [denote, derive]
+    simp only [denote_or, derive]
     rw [Lang.derive_or]
     unfold Lang.or
     rw [ihp]
     rw [ihq]
   | concat p q ihp ihq =>
-    simp only [denote, derive]
+    simp only [denote_concat, denote_or, derive]
     rw [Lang.derive_concat]
     rw [<- ihp]
     rw [<- ihq]
@@ -256,7 +297,7 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
     congrm (Lang.or (Lang.concat (denote Φ (derive (fun s a => Φ s a) p x)) (denote Φ q)) ?_)
     rw [null_commutes]
   | star r ih =>
-    simp only [denote, derive]
+    simp only [denote_star, denote_concat, derive]
     rw [Lang.derive_star]
     guard_target =
       Lang.concat (denote Φ (derive (fun s a => Φ s a) r x)) (Lang.star (denote Φ r))
