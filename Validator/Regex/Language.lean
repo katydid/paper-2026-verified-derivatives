@@ -1,27 +1,23 @@
-namespace Language
-
 def Lang (α: Type): Type := List α -> Prop
 
-end Language
-
-def Language.emptyset: Lang α := fun _ => False
-def Language.emptystr: Lang α := fun xs => xs = []
-def Language.symbol (Φ: σ -> α -> Prop) (s: σ): Lang α :=
+def Lang.emptyset: Lang α := fun _ => False
+def Lang.emptystr: Lang α := fun xs => xs = []
+def Lang.symbol (Φ: σ -> α -> Prop) (s: σ): Lang α :=
   fun xs => ∃ x, xs = [x] /\ Φ s x
-def Language.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond /\ P xs
-def Language.or (P : Lang α) (Q : Lang α): Lang α := fun xs => P xs \/ Q xs
-def Language.concat (P : Lang α) (Q : Lang α): Lang α := fun (xs : List α) =>
+def Lang.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond /\ P xs
+def Lang.or (P : Lang α) (Q : Lang α): Lang α := fun xs => P xs \/ Q xs
+def Lang.concat (P : Lang α) (Q : Lang α): Lang α := fun (xs : List α) =>
   ∃ n: Fin (xs.length + 1), P (List.take n xs) /\ Q (List.drop n xs)
-def Language.star (R: Lang α) (xs: List α): Prop :=
+def Lang.star (R: Lang α) (xs: List α): Prop :=
   match xs with
   | [] => True
   | (x::xs') => ∃ (n: Fin xs.length),
-      R (x::List.take n xs') /\ Language.star R (List.drop n xs')
+      R (x::List.take n xs') /\ Lang.star R (List.drop n xs')
   termination_by xs.length
   decreasing_by
     simp only [List.length_drop, List.length_cons]; omega
 
-namespace Language
+namespace Lang
 
 open List (
   append_assoc
@@ -278,7 +274,7 @@ theorem derive_iff_concat {α: Type} {x: α} {P Q: Lang α} {xs: List α}:
   case mp =>
     intro h
     obtain ⟨n, hp, hq⟩ := h
-    simp only [Language.or, Language.concat, derive', derives, null, onlyif]
+    simp only [Lang.or, Lang.concat, derive', derives, null, onlyif]
     simp only [cons_append, nil_append, List.length_cons] at n
     obtain ⟨n, hn⟩ := n
     simp_all only
@@ -291,7 +287,7 @@ theorem derive_iff_concat {α: Type} {x: α} {P Q: Lang α} {xs: List α}:
       simp_all
       exists Fin.mk n (by omega)
   case mpr =>
-    simp only [Language.or, Language.concat, derive', derives, null, onlyif]
+    simp only [Lang.or, Lang.concat, derive', derives, null, onlyif]
     intro h
     cases h with
     | inl h =>
@@ -467,15 +463,15 @@ theorem not_not_intro' {p : Prop} (h : p) : ¬ ¬ p :=
   fun hn : (p -> False) => hn h
 
 def onlyif_true {cond: Prop} {l: List α -> Prop} (condIsTrue: cond):
-  Language.onlyif cond l = l := by
-  unfold Language.onlyif
+  Lang.onlyif cond l = l := by
+  unfold Lang.onlyif
   funext xs
   simp only [eq_iff_iff, and_iff_right_iff_imp]
   intro p
   assumption
 
 def onlyif_false {cond: Prop} {l: List α -> Prop} (condIsFalse: ¬cond):
-  Language.onlyif cond l = Language.emptyset := by
+  Lang.onlyif cond l = Lang.emptyset := by
   funext xs
   rw [eq_iff_iff]
   apply Iff.intro

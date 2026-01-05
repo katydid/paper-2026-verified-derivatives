@@ -1,7 +1,7 @@
 import Validator.Std.Hedge
 import Validator.Regex.Language
 
-namespace Language
+namespace Lang
 
 open List (
   append_assoc
@@ -57,21 +57,21 @@ theorem tree_exists_is_tree_match:
     | cons x' xs =>
       simp only [cons.injEq, reduceCtorEq, and_false, false_and, exists_const, exists_false]
 
-example: Lang (Hedge.Node Nat) := (tree (fun x => x = 1) (Language.or (tree (fun x => x = 1) Language.emptystr) Language.emptyset))
+example: Lang (Hedge.Node Nat) := (tree (fun x => x = 1) (Lang.or (tree (fun x => x = 1) Lang.emptystr) Lang.emptyset))
 
 theorem null_iff_tree {α: Type} {p: α -> Bool} {children: Lang (Hedge.Node α)}:
-  Language.null (tree p children) <-> False :=
+  Lang.null (tree p children) <-> False :=
   Iff.intro nofun nofun
 
 theorem null_tree {α: Type} {p: α -> Bool} {children: Lang (Hedge.Node α)}:
-  Language.null (tree p children) = False := by
+  Lang.null (tree p children) = False := by
   rw [null_iff_tree]
 
 theorem derive_iff_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α} {xs: Hedge α}:
-  (Language.derive (tree p childlang) (Hedge.Node.mk label children)) xs <->
-  (Language.onlyif (p label /\ childlang children) Language.emptystr) xs := by
-  simp only [Language.derive]
-  simp only [Language.onlyif, Language.emptystr]
+  (Lang.derive (tree p childlang) (Hedge.Node.mk label children)) xs <->
+  (Lang.onlyif (p label /\ childlang children) Lang.emptystr) xs := by
+  simp only [Lang.derive]
+  simp only [Lang.onlyif, Lang.emptystr]
   refine Iff.intro ?toFun ?invFun
   case toFun =>
     unfold tree
@@ -89,9 +89,9 @@ theorem derive_iff_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node 
     simp only [true_and]
     exact hif
 
--- Hedge.Language.derive (Hedge.Language.tree p.eval (Denote.denote children)) a
+-- Hedge.Lang.derive (Hedge.Lang.tree p.eval (Denote.denote children)) a
 theorem derive_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α}:
-  (Language.derive (tree p childlang) (Hedge.Node.mk label children)) =
-  (Language.onlyif (p label /\ childlang children) Language.emptystr) := by
+  (Lang.derive (tree p childlang) (Hedge.Node.mk label children)) =
+  (Lang.onlyif (p label /\ childlang children) Lang.emptystr) := by
   funext
   rw [derive_iff_tree]

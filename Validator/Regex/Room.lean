@@ -76,6 +76,6 @@ theorem derive_star {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ
 
 theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):
   Regex.denote (fun s a => Φ s a) (Room.derive (flip Φ a) r)
-  = Language.derive (Regex.denote (fun s a => Φ s a) r) a := by
+  = Lang.derive (Regex.denote (fun s a => Φ s a) r) a := by
   rw [Regex.Room.derive_is_Regex_derive]
   rw [<- Regex.derive_commutesb]

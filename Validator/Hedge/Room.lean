@@ -111,35 +111,35 @@ theorem and_start {α: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [Decidab
       rw [ih]
 
 theorem derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
-  Language.derive
+  Lang.derive
     (Rule.denote G Φ
       (Regex.symbol (pred, ref))
     )
     (Node.mk label children)
   =
-    Language.onlyif
+    Lang.onlyif
       (Φ pred label ∧ Rule.denote G Φ (G.lookup ref) children)
-      Language.emptystr
+      Lang.emptystr
   := by
   funext xs
   rw [Grammar.denote_symbol]
-  rw [Language.derive_iff_tree]
+  rw [Lang.derive_iff_tree]
   simp only [decide_eq_true_eq]
 
 theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ]
   (r: Regex (φ × Ref n)) (x: Node α):
   Rule.denote G Φ (Grammar.Room.derive G (decideRel Φ) r x)
-  = Language.derive (Rule.denote G Φ r) x := by
+  = Lang.derive (Rule.denote G Φ r) x := by
   induction r with
   | emptyset =>
     rw [Grammar.Room.derive_emptyset]
     rw [Grammar.denote_emptyset]
-    rw [Language.derive_emptyset]
+    rw [Lang.derive_emptyset]
   | emptystr =>
     rw [Grammar.Room.derive_emptystr]
     rw [Grammar.denote_emptystr]
     rw [Grammar.denote_emptyset]
-    rw [Language.derive_emptystr]
+    rw [Lang.derive_emptystr]
   | symbol s =>
     obtain ⟨pred, ref⟩ := s
     obtain ⟨label, children⟩ := x
@@ -175,7 +175,7 @@ theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel
     rw [Grammar.Room.derive_or]
     rw [Grammar.denote_or]
     rw [Grammar.denote_or]
-    rw [Language.derive_or]
+    rw [Lang.derive_or]
     rw [ih1]
     rw [ih2]
   | concat r1 r2 ih1 ih2 =>
@@ -184,7 +184,7 @@ theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel
     rw [Grammar.denote_or]
     rw [Grammar.denote_concat]
     rw [Grammar.denote_onlyif]
-    rw [Language.derive_concat]
+    rw [Lang.derive_concat]
     rw [<- ih1]
     rw [<- ih2]
     congr
@@ -194,7 +194,7 @@ theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel
     rw [Grammar.denote_star]
     rw [Grammar.denote_concat]
     rw [Grammar.denote_star]
-    rw [Language.derive_star]
+    rw [Lang.derive_star]
     rw [ih1]
   termination_by x
   decreasing_by
@@ -202,7 +202,7 @@ theorem derive_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel
 
 theorem derive_commutesb (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)) (x: Node α):
   Rule.denote G (fun s a => Φ s a) (Grammar.Room.derive G Φ r x)
-  = Language.derive (Rule.denote G (fun s a => Φ s a) r) x := by
+  = Lang.derive (Rule.denote G (fun s a => Φ s a) r) x := by
   have h1: (fun s a => Φ s a) = decideRel (fun s a => Φ s a) := by
     unfold decideRel
     aesop
