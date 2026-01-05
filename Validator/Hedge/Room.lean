@@ -3,11 +3,11 @@ import Mathlib.Tactic.SimpRw
 import Validator.Std.Decidable
 import Validator.Std.Hedge
 
-import Validator.Regex.Language
+import Validator.Regex.Lang
 import Validator.Regex.Room
 import Validator.Hedge.Denote
 import Validator.Hedge.Grammar
-import Validator.Hedge.Language
+import Validator.Hedge.Lang
 
 namespace Hedge
 

@@ -1,5 +1,5 @@
 import Validator.Std.Hedge
-import Validator.Regex.Language
+import Validator.Regex.Lang
 
 namespace Lang
 

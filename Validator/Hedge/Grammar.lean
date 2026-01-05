@@ -4,7 +4,7 @@ import Validator.Std.Vec
 
 import Validator.Pred.AnyEq
 import Validator.Regex.Regex
-import Validator.Regex.Language
+import Validator.Regex.Lang
 import Validator.Hedge.Types
 
 namespace Hedge.Grammar

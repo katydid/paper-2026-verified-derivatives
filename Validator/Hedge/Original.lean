@@ -1,6 +1,3 @@
--- OriginalTotal is a total version of the original derivative algorithm that runs on a labelled tree.
--- This means the derive function is not partial, but total, because it includes a proof of termination.
-
 import Validator.Std.Except
 import Validator.Std.List
 
@@ -108,15 +105,10 @@ def Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
     · apply decreasing_concat_r
     · apply decreasing_star
 
-def Rule.derive'
-  (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
-  (r: Regex (φ × Ref n)) (x: Hedge.Node α): Regex (φ × Ref n) :=
-  Rule.derive G (fun p a => Φ p a) r x
-
 def validate
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
   (r: Regex (φ × Ref n)) (hedge: Hedge α): Bool :=
-  Regex.null (List.foldl (Rule.derive' G Φ) r hedge)
+  Regex.null (List.foldl (Rule.derive G Φ) r hedge)
 
 def run [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   Except.ok (validate G AnyEq.Pred.evalb G.start [t])
