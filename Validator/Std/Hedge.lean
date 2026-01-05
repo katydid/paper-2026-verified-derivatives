@@ -316,15 +316,8 @@ theorem elem_is_leq_sizeOf {α: Type} [SizeOf α] {x: Hedge.Node α} {ys: Hedge 
     simp only [List.cons.sizeOf_spec]
     omega
 
-private theorem Hedge.Node.sizeOf_lt_cons_child {α: Type} (label: α) (x1: Hedge.Node α) (x2: Hedge.Node α) (xs: Hedge α):
+theorem Node.sizeOf_lt_cons_child {α: Type} (label: α) (x1: Hedge.Node α) (x2: Hedge.Node α) (xs: Hedge α):
   sizeOf x1 < sizeOf (Hedge.Node.mk label xs)
-  -> sizeOf x1 < sizeOf (Hedge.Node.mk label (x2 :: xs)) := by
-  simp
-  intro h
-  omega
-
-private theorem Hedge.Node.sizeOf_lt_cons_siblings {α: Type} (label: α) (x1: Hedge.Node α) (x2: Hedge.Node α) (xs: Hedge α):
-  sizeOf x1 < sizeOf x2
   -> sizeOf x1 < sizeOf (Hedge.Node.mk label (x2 :: xs)) := by
   simp
   intro h
@@ -351,64 +344,3 @@ theorem Node.sizeOf_children
       apply Hedge.Node.sizeOf_lt_cons_child
       apply ih
       assumption
-
-theorem Node.sizeOf_grandchildren
-  {α : Type}
-  (child : Node α)
-  (label : α)
-  (children : List (Node α))
-  (h : child ∈ List.flatMap Hedge.Node.getDescendants children)
-  : sizeOf child < sizeOf (Hedge.Node.mk label children) := by
-  cases hchildren: children with
-  | nil =>
-    subst hchildren
-    simp at h
-  | cons firstchild children =>
-    subst hchildren
-    simp only [List.flatMap_cons, List.mem_append] at h
-    cases h with
-    | inl h =>
-      unfold getDescendants at h
-      cases hfirstchild: firstchild with
-      | mk firstchildlabel firstgranchildren =>
-      apply Hedge.Node.sizeOf_lt_cons_siblings
-      subst hfirstchild
-      simp only [List.mem_append] at h
-      cases h with
-      | inl h =>
-        apply Node.sizeOf_children
-        assumption
-      | inr h =>
-        apply Node.sizeOf_grandchildren
-        exact h
-    | inr h =>
-      apply Hedge.Node.sizeOf_lt_cons_child
-      apply Node.sizeOf_grandchildren
-      assumption
-  termination_by children
-  decreasing_by
-    · subst hfirstchild
-      subst hchildren
-      simp
-      omega
-    · subst hchildren
-      simp
-      omega
-
-theorem Node.DescendantOf.sizeOf
-  (x: Hedge.Node α)
-  (d : x.DescendantOf): sizeOf d.val < sizeOf x := by
-  unfold DescendantOf at d
-  unfold Descendant at d
-  obtain ⟨d, h⟩ := d
-  simp only
-  obtain ⟨label, children⟩ := x
-  unfold getDescendants at h
-  simp only [List.mem_append] at h
-  cases h with
-  | inl h =>
-    apply Node.sizeOf_children
-    assumption
-  | inr h =>
-    apply Node.sizeOf_grandchildren
-    assumption

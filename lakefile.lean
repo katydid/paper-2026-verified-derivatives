@@ -3,9 +3,7 @@ open Lake DSL
 
 package validator
 
-abbrev packageLinters : Array LeanOption := #[
-  ⟨`weak.linter.detectClassical, true⟩
-]
+abbrev packageLinters : Array LeanOption := #[]
 
 abbrev packageLeanOptions :=
   packageLinters
