@@ -9,8 +9,6 @@ import Validator.Hedge.Denote
 import Validator.Hedge.Grammar
 import Validator.Regex.Regex
 
-namespace OriginalTotal
-
 theorem decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -67,7 +65,7 @@ theorem decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (l
   have h' := List.list_elem_lt h
   omega
 
-def Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
+def Original.Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
   (r: Regex (φ × Ref n)) (node: Hedge.Node α): Regex (φ × Ref n) :=
   match r with
   | Regex.emptyset => Regex.emptyset
@@ -110,7 +108,7 @@ def Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
 def validate
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
   (r: Regex (φ × Ref n)) (hedge: Hedge α): Bool :=
-  Regex.null (List.foldl (Rule.derive G Φ) r hedge)
+  Regex.null (List.foldl (Original.Rule.derive G Φ) r hedge)
 
 def run [DecidableEq α] (G: Hedge.Grammar n (AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   Except.ok (validate G AnyEq.Pred.evalb G.start [t])
@@ -180,10 +178,11 @@ abbrev node {α} (label: α) children := Hedge.Node.mk label children
   (node "a" [node "b" [], node "c" [node "d" []]]) =
   Except.ok true
 
-theorem derive_commutes {α: Type} {φ: Type}
+theorem Original.derive_commutes {α: Type} {φ: Type}
   (G: Hedge.Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ]
   (r: Regex (φ × Ref n)) (x: Hedge.Node α):
-  Hedge.Grammar.Rule.denote G Φ (Rule.derive G (decideRel Φ) r x) = Lang.derive (Hedge.Grammar.Rule.denote G Φ r) x := by
+  Hedge.Grammar.Rule.denote G Φ (Original.Rule.derive G (decideRel Φ) r x)
+  = Lang.derive (Hedge.Grammar.Rule.denote G Φ r) x := by
   fun_induction (Rule.derive G (fun p a => Φ p a)) r x with
   | case1 => -- emptyset
     rw [Hedge.Grammar.denote_emptyset]
