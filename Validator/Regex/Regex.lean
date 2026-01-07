@@ -22,21 +22,13 @@ def Regex.null: (r: Regex σ) → Bool
   | emptyset => false | emptystr => true | symbol _ => false | star _ => true
   | or p q => (null p || null q) | concat p q => (null p && null q)
 
-def Regex.denote (Φ : σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
-  match r with
-  | emptyset => False
-  | emptystr => xs = []
-  | symbol s => match xs with
-    | [x] => Φ s x | _ => False
-  | or r1 r2 => (denote Φ r1 xs) \/ (denote Φ r2 xs)
-  | concat r1 r2 => ∃ (i: Fin (xs.length + 1)),
-      (denote Φ r1 (List.take i xs)) /\ (denote Φ r2 (List.drop i xs))
-  | star r1 => match xs with
-    | [] => True
-    | (x::xs') => ∃ (i: Fin xs.length),
-                        (denote Φ r1 (x::List.take i xs'))
-                        /\ (denote Φ (Regex.star r1) (List.drop i xs'))
-  termination_by (r, xs.length)
+def Regex.denote (Φ : σ → α → Prop): Regex σ → Lang α
+  | emptyset => Lang.emptyset
+  | emptystr => Lang.emptystr
+  | symbol s => Lang.symbol Φ s
+  | or r1 r2 => Lang.or (denote Φ r1) (denote Φ r2)
+  | concat r1 r2 => Lang.concat (denote Φ r1) (denote Φ r2)
+  | star r1 => Lang.star (denote Φ r1)
 
 namespace Regex
 
@@ -63,7 +55,7 @@ theorem denote_onlyif {α: Type} (Φ : σ → α → Prop) (condition: Prop) [dc
   case neg hc =>
     simp only [eq_iff_iff]
     rw [denote]
-    simp only [false_iff, not_and]
+    simp only [Lang.emptyset, false_iff, not_and]
     intro hc'
     contradiction
 
@@ -179,18 +171,12 @@ theorem denote_symbol {α: Type} {σ: Type} (Φ: σ → α → Prop) (s: σ):
   cases xs with
   | nil =>
     simp only [denote, Lang.symbol]
-    -- aesop?
-    simp_all only [List.ne_cons_self, false_and, exists_false]
   | cons x xs =>
     cases xs with
     | nil =>
       simp only [denote, Lang.symbol]
-      -- aesop?
-      simp_all only [List.cons.injEq, and_true, exists_eq_left']
     | cons x' xs =>
       simp only [denote, Lang.symbol]
-      -- aesop?
-      simp_all only [List.cons.injEq, reduceCtorEq, and_false, false_and, exists_false]
 
 theorem denote_or {α: Type} {σ: Type} (Φ: σ → α → Prop) (p q: Regex σ):
   denote Φ (or p q) = Lang.or (denote Φ p) (denote Φ q) := by
@@ -209,24 +195,6 @@ theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex
     simp only [denote, Lang.star]
   | cons x xs =>
     simp only [denote, Lang.star]
-    apply Iff.intro
-    case mp =>
-      intro h
-      obtain ⟨⟨i, hi⟩, h1, h2⟩ := h
-      exists ⟨i, hi⟩
-      apply And.intro h1
-      rw [<- (denote_star_iff Φ r (List.drop i xs))]
-      simp only at h2
-      exact h2
-    case mpr =>
-      intro h
-      obtain ⟨⟨i, hi⟩, h1, h2⟩ := h
-      exists ⟨i, hi⟩
-      apply And.intro h1
-      rw [(denote_star_iff Φ r (List.drop i xs))]
-      simp only at h2
-      exact h2
-  termination_by xs.length
 
 theorem denote_star {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex σ):
   denote Φ (star r) = Lang.star (denote Φ r) := by
@@ -246,29 +214,29 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
   | emptystr =>
     unfold denote
     unfold null
-    simp only
+    simp only [Lang.emptystr]
   | symbol p =>
     unfold denote
     unfold null
-    apply Bool.false_eq_true
+    simp only [Bool.false_eq_true, Lang.symbol, List.ne_cons_self, false_and, exists_false]
   | or p q ihp ihq =>
     unfold denote
     unfold null
+    simp only [Bool.or_eq_true, Lang.or, eq_iff_iff]
     rw [<- ihp]
     rw [<- ihq]
-    rw [Bool.or_eq_true]
   | concat p q ihp ihq =>
     unfold denote
     unfold null
     rw [Bool.and_eq_true p.null q.null]
     rw [ihp]
     rw [ihq]
-    simp only [List.length_nil, Nat.reduceAdd, Fin.val_eq_zero, List.take_nil, List.drop_nil,
-      exists_const]
+    simp only [Lang.concat, List.length_nil, Nat.reduceAdd, Fin.val_eq_zero, List.take_nil,
+      List.drop_nil, exists_const]
   | star r ih =>
     unfold denote
     unfold null
-    simp only
+    simp only [Lang.star.eq_1]
 
 theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (x: α):
   denote Φ (derive (fun s a => Φ s a) r x) = Lang.derive (denote Φ r) x := by

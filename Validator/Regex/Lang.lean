@@ -35,7 +35,7 @@ open List (
 )
 
 -- attribute [simp] allows these definitions to be unfolded when using the simp tactic.
-attribute [simp] emptyset emptystr onlyif or and
+attribute [simp] emptyset emptystr onlyif symbol or and concat star
 
 example: Lang α := emptystr
 example: Lang α := emptyset
