@@ -6,17 +6,7 @@ import Validator.Regex.Lang
 inductive Regex (σ: Type) where
   | emptyset | emptystr | symbol (s: σ)
   | or (r1 r2: Regex σ) | concat (r1 r2: Regex σ) | star (r1: Regex σ)
-  deriving DecidableEq, Ord, Repr, Hashable, Repr
-
-instance [Ord σ]: Ord (Regex σ) := inferInstance
-
-instance [Repr σ]: Repr (Regex σ) := inferInstance
-
-instance [DecidableEq σ]: DecidableEq (Regex σ) := inferInstance
-
-instance [DecidableEq σ]: BEq (Regex σ) := inferInstance
-
-instance [Hashable σ]: Hashable (Regex σ) := inferInstance
+  deriving DecidableEq, Ord, Repr, Hashable, BEq
 
 def Regex.null: (r: Regex σ) → Bool
   | emptyset => false | emptystr => true | symbol _ => false | star _ => true
