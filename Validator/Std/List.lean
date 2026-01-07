@@ -312,13 +312,26 @@ theorem intersections1_length_is_le (xs: List α):
   := by
   intro ys hys
   induction xs generalizing ys with
-  | nil =>
-    simp [intersections, intersectionsAcc] at hys
-    rw [hys]
-    simp
-  | cons x xs ih =>
-
-    sorry
+    | nil =>
+      simp [intersections, intersectionsAcc] at hys
+      rw [hys]
+      simp
+    | cons x xs ih =>
+      simp [intersections, intersectionsAcc, List.map_append] at hys
+      rcases hys with hys | hys
+      · rcases hys with ⟨fst, ⟨snd, hpair⟩, hys⟩
+        have hfst : fst ∈ List.map (·.1) (intersections xs) := by
+          exact List.mem_map.mpr ⟨(fst, snd), hpair, rfl⟩
+        have hlen := ih fst hfst
+        rw [←hys]
+        rw [length_cons]
+        exact Nat.succ_le_succ hlen
+      · rcases hys with ⟨snd, hpair⟩
+        have hys : ys ∈ List.map (·.1) (intersections xs) := by
+          exact List.mem_map.mpr ⟨(ys, snd), hpair, rfl⟩
+        have hlen := ih ys hys
+        rw [length_cons]
+        exact Nat.le_succ_of_le hlen
 
 -- theorem intersectionsAcc_contains_itself_fst (xs: List α) (i: Fin (intersections_length xs)):
 
