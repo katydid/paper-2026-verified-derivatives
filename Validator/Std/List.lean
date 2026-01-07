@@ -25,7 +25,7 @@ theorem list_elem_lt [SizeOf α] {xs: List α} (h: x ∈ xs): sizeOf x ≤ sizeO
     apply Nat.le_trans ih
     simp +arith
 
-theorem list_foldl_attach {f: β -> α -> β} {init: β} {xs: List α}:
+theorem list_foldl_attach {f: β → α → β} {init: β} {xs: List α}:
   List.foldl (fun res ⟨x, _hx⟩ => f res x) init (List.attach xs)
   = List.foldl f init xs := by
   simp only [foldl_subtype, unattach_attach]
@@ -83,7 +83,7 @@ theorem list_sizeOf_cons [SizeOf α] (xs ys: List α):
     omega
 
 theorem list_length_neq_take {n: Nat} {xs: List α}:
-  ¬List.take n xs = xs -> (List.take n xs).length < xs.length := by
+  ¬List.take n xs = xs → (List.take n xs).length < xs.length := by
   intro h
   fun_induction List.take
   case case1 xs =>
@@ -102,7 +102,7 @@ theorem list_length_neq_take {n: Nat} {xs: List α}:
     omega
 
 theorem list_length_neq_drop {n: Nat} {xs: List α}:
-  ¬List.drop n xs = xs -> (List.drop n xs).length < xs.length := by
+  ¬List.drop n xs = xs → (List.drop n xs).length < xs.length := by
   intro h
   induction n with
   | zero =>
@@ -192,7 +192,7 @@ theorem list_take_n_nil {n: Nat} {α: Type}:
   simp
 
 theorem list_infix_take_is_infix:
-  List.IsInfix xs (List.take n ys) ->
+  List.IsInfix xs (List.take n ys) →
   List.IsInfix xs ys := by
   intro h
   have hys := List.infix_append [] (List.take n ys) (List.drop n ys)
@@ -200,7 +200,7 @@ theorem list_infix_take_is_infix:
   apply List.IsInfix.trans h hys
 
 theorem list_infix_drop_is_infix:
-  List.IsInfix xs (List.drop n ys) ->
+  List.IsInfix xs (List.drop n ys) →
   List.IsInfix xs ys := by
   intro h
   have hys := List.infix_append (List.take n ys) (List.drop n ys) []
@@ -208,7 +208,7 @@ theorem list_infix_drop_is_infix:
   apply List.IsInfix.trans h hys
 
 theorem list_infix_def {xs ys: List α}:
-  List.IsInfix xs ys ->
+  List.IsInfix xs ys →
   ∃ xs1 xs2, xs1 ++ xs ++ xs2 = ys := by
   intro h
   obtain ⟨xs1, h⟩ := h
@@ -239,7 +239,7 @@ theorem list_infixof_drop_is_infix {xs: List α} (ys: InfixOf (List.drop n xs)):
   assumption
 
 theorem list_infix_is_leq_sizeOf {α: Type} [SizeOf α] {xs ys: List α}:
-  List.IsInfix xs ys ->
+  List.IsInfix xs ys →
   sizeOf xs <= sizeOf ys := by
   intro h
   have h' := List.list_infix_def h

@@ -12,7 +12,7 @@ import Validator.Regex.Replace
 --   | star (p: Regex σ)
 --   deriving DecidableEq, Ord, Repr, Hashable
 
--- def Regex.map (r: Regex σ) (f: σ -> σ'): Regex σ' :=
+-- def Regex.map (r: Regex σ) (f: σ → σ'): Regex σ' :=
 --   match r with
 --   | emptyset => emptyset
 --   | emptystr => emptystr
@@ -132,7 +132,7 @@ lemma extract_replace_is_id : ∀ (r: Regex σ),
   rw [<- replaceLE_cast_both]
   rw [<- extractAcc_replaceLE_is_id r #v[]]
 
-theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α -> β):
+theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → β):
   Regex.map r f = replace (extractAcc r acc).1 (Vector.map f (extractAcc r acc).2) := by
   simp only [replace]
   generalize_proofs hr
@@ -226,13 +226,13 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α -> β
     rw [<- ih1 acc]
     simp only [Regex.map]
 
-theorem extractAcc_replaceLE_is_fmap (r: Regex α) (acc: Vector α l) (f: α -> β):
+theorem extractAcc_replaceLE_is_fmap (r: Regex α) (acc: Vector α l) (f: α → β):
   Regex.map r f = replaceLE (extractAcc r acc).1 (Vector.map f (extractAcc r acc).2) (by omega) := by
   rw [<- replace]
   rw [<- extractAcc_replace_is_fmap]
 
 lemma extract_replace_is_map:
-  ∀ (r: Regex α) (f: α -> β),
+  ∀ (r: Regex α) (f: α → β),
   Regex.map r f = replace (extract r).1 (Vector.map f (extract r).2) := by
   intro r f
   simp only [extract]

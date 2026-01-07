@@ -65,7 +65,7 @@ theorem decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (l
   have h' := List.list_elem_lt h
   omega
 
-def Original.Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
+def Original.Rule.derive (G: Hedge.Grammar n φ) (Φ: φ → α → Bool)
   (r: Regex (φ × Ref n)) (node: Hedge.Node α): Regex (φ × Ref n) :=
   match r with
   | Regex.emptyset => Regex.emptyset
@@ -106,7 +106,7 @@ def Original.Rule.derive (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
     · apply decreasing_star
 
 def validate
-  (G: Hedge.Grammar n φ) (Φ: φ -> α -> Bool)
+  (G: Hedge.Grammar n φ) (Φ: φ → α → Bool)
   (r: Regex (φ × Ref n)) (hedge: Hedge α): Bool :=
   Regex.null (List.foldl (Original.Rule.derive G Φ) r hedge)
 
@@ -289,7 +289,7 @@ private def example_grammar_sec: Hedge.Grammar 2 String :=
   = false
 
 theorem Original.derive_commutes {α: Type} {φ: Type}
-  (G: Hedge.Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ]
+  (G: Hedge.Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ]
   (r: Regex (φ × Ref n)) (x: Hedge.Node α):
   Hedge.Grammar.Rule.denote G Φ (Original.Rule.derive G (decideRel Φ) r x)
   = Lang.derive (Hedge.Grammar.Rule.denote G Φ r) x := by

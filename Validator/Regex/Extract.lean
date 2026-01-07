@@ -139,7 +139,7 @@ theorem extractAcc_take_toList_fmap (acc: Vector σ l):
   simp_all only [List.map_append, List.length_map, Vector.length_toList,
     List.take_left']
 
-theorem extractAcc_take_fmap (acc: Vector α l) (f: α -> β):
+theorem extractAcc_take_fmap (acc: Vector α l) (f: α → β):
   (Vector.take
     (Vector.map
       f

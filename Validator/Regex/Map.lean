@@ -1,6 +1,6 @@
 import Validator.Regex.Regex
 
-def Regex.map (r: Regex α) (f: α -> β): Regex β := match r with
+def Regex.map (r: Regex α) (f: α → β): Regex β := match r with
   | emptyset => emptyset | emptystr => emptystr | star r1 => star (map r1 f)
   | symbol s => symbol (f s) | or r1 r2 => or (map r1 f) (map r2 f)
   | concat r1 r2 => concat (map r1 f) (map r2 f)
@@ -28,7 +28,7 @@ theorem map_id (r: Regex α):
     simp only [map]
     rw [ih1]
 
-theorem map_map (r: Regex α) (f: α -> β) (g: β -> σ):
+theorem map_map (r: Regex α) (f: α → β) (g: β → σ):
   map (map r f) g = map r (fun r' => g (f r')) := by
   induction r with
   | emptyset =>
@@ -49,7 +49,7 @@ theorem map_map (r: Regex α) (f: α -> β) (g: β -> σ):
     simp only [map]
     rw [ih1]
 
-theorem map_null {σ} (Φ: σ -> Bool) (r: Regex σ):
+theorem map_null {σ} (Φ: σ → Bool) (r: Regex σ):
   (map r (fun s => (s, Φ s))).null = r.null := by
   induction r with
   | emptyset =>

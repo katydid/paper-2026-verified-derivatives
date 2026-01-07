@@ -24,7 +24,7 @@
 * ℕ (natural number type)
 * ν (nullable function name)
 * φ, ψ (generic predicate type parameter, phi/psi)
-* Φ, Ψ (eval pred function, Phi/Psi: φ -> α -> Bool)
+* Φ, Ψ (eval pred function, Phi/Psi: φ → α → Bool)
 * r (regular expression variable names) (TODO: need two more? s is symbol, p and q are for predicates)
 * p, q (predicates)
 * Π (Pi type)

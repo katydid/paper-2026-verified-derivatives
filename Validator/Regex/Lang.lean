@@ -1,8 +1,8 @@
-def Lang (α: Type): Type := List α -> Prop
+def Lang (α: Type): Type := List α → Prop
 
 def Lang.emptyset: Lang α := fun _ => False
 def Lang.emptystr: Lang α := fun xs => xs = []
-def Lang.symbol (Φ: σ -> α -> Prop) (s: σ): Lang α :=
+def Lang.symbol (Φ: σ → α → Prop) (s: σ): Lang α :=
   fun xs => ∃ x, xs = [x] /\ Φ s x
 def Lang.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond /\ P xs
 def Lang.or (P : Lang α) (Q : Lang α): Lang α := fun xs => P xs \/ Q xs
@@ -113,7 +113,7 @@ theorem null_iff_emptyset {α: Type}:
   rw [null_emptyset]
 
 theorem not_null_if_emptyset {α: Type}:
-  @null α emptyset -> False :=
+  @null α emptyset → False :=
   null_iff_emptyset.mp
 
 theorem null_iff_emptystr {α: Type}:
@@ -130,15 +130,15 @@ theorem null_emptystr {α: Type}:
   @null α emptystr = True := by
   rw [null_iff_emptystr]
 
-theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ -> α -> Prop} {s: σ}:
+theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
   null (symbol Φ s) <-> False :=
   Iff.intro nofun nofun
 
-theorem not_null_if_symbol {σ: Type} {α: Type} {Φ: σ -> α -> Prop} {s: σ}:
-  null (symbol Φ s) -> False :=
+theorem not_null_if_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
+  null (symbol Φ s) → False :=
   nofun
 
-theorem null_symbol {σ: Type} {α: Type} {Φ: σ -> α -> Prop} {s: σ}:
+theorem null_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
   null (symbol Φ s) = False := by
   rw [null_iff_symbol]
 
@@ -199,7 +199,7 @@ theorem derive_emptystr {α: Type} {a: α}:
   funext
   rw [derive_iff_emptystr]
 
-theorem derive_iff_symbol {α: Type} {Φ: σ -> α -> Prop} {x: α} {xs: List α}:
+theorem derive_iff_symbol {α: Type} {Φ: σ → α → Prop} {x: α} {xs: List α}:
   (derive (symbol Φ s) x) xs <-> (onlyif (Φ s x) emptystr) xs := by
   rw [derive_is_derive']
   simp only [derive', derives, singleton_append]
@@ -221,7 +221,7 @@ theorem derive_iff_symbol {α: Type} {Φ: σ -> α -> Prop} {x: α} {xs: List α
     simp only [cons.injEq, true_and]
     exact And.intro hxs hpx
 
-theorem derive_symbol {α: Type} {Φ: σ -> α -> Prop} {x: α}:
+theorem derive_symbol {α: Type} {Φ: σ → α → Prop} {x: α}:
   (derive (symbol Φ s) x) = (onlyif (Φ s x) emptystr) := by
   funext
   rw [derive_iff_symbol]
@@ -458,9 +458,9 @@ example (r s: Lang α) (H: s = r):
   ac_rfl
 
 theorem not_not_intro' {p : Prop} (h : p) : ¬ ¬ p :=
-  fun hn : (p -> False) => hn h
+  fun hn : (p → False) => hn h
 
-def onlyif_true {cond: Prop} {l: List α -> Prop} (condIsTrue: cond):
+def onlyif_true {cond: Prop} {l: List α → Prop} (condIsTrue: cond):
   Lang.onlyif cond l = l := by
   unfold Lang.onlyif
   funext xs
@@ -468,7 +468,7 @@ def onlyif_true {cond: Prop} {l: List α -> Prop} (condIsTrue: cond):
   intro p
   assumption
 
-def onlyif_false {cond: Prop} {l: List α -> Prop} (condIsFalse: ¬cond):
+def onlyif_false {cond: Prop} {l: List α → Prop} (condIsFalse: ¬cond):
   Lang.onlyif cond l = Lang.emptyset := by
   funext xs
   rw [eq_iff_iff]

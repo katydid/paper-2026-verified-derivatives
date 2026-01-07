@@ -67,7 +67,7 @@ theorem drop_nil (i: Nat):
     simp only [Vector.drop]
     simp
 
-theorem map_nil {f: α -> β}:
+theorem map_nil {f: α → β}:
   Vector.map f #v[] = #v[] := by
   simp only [Vector.map]
   simp
@@ -223,7 +223,7 @@ theorem snoc_get {n: Nat} {α: Type u} (xs: Vector α n) (y: α):
   rw [get_is_getElem]
   rw [snoc_getElem]
 
-theorem snoc_map_list (xs: Vector α l) (f: α -> β):
+theorem snoc_map_list (xs: Vector α l) (f: α → β):
   (Vector.map f (Vector.snoc xs x)).toList
   = (Vector.snoc (Vector.map f xs) (f x)).toList := by
   rw [toList_map]
@@ -233,7 +233,7 @@ theorem snoc_map_list (xs: Vector α l) (f: α -> β):
   simp only [List.snoc]
   simp
 
-theorem snoc_map (xs: Vector α l) (f: α -> β):
+theorem snoc_map (xs: Vector α l) (f: α → β):
   (Vector.map f (Vector.snoc xs x))
   = (Vector.snoc (Vector.map f xs) (f x)) := by
   apply eq
@@ -247,14 +247,14 @@ theorem map_toList:
   (Vector.map f xs).toList = List.map f (xs.toList) := by
   simp_all only [Vector.toList_map]
 
-theorem map_cast (xs : Vector α l) (f: α -> β) (h: l = n):
+theorem map_cast (xs : Vector α l) (f: α → β) (h: l = n):
   (Vector.map f (Vector.cast h xs)) = Vector.cast h (Vector.map f xs) := by
   apply eq
   rw [map_toList]
   repeat rw [cast_toList]
   rw [map_toList]
 
-theorem map_zip_is_zip_map {α: Type u} {β: Type v} (f: α -> β) (xs: Vector α l):
+theorem map_zip_is_zip_map {α: Type u} {β: Type v} (f: α → β) (xs: Vector α l):
   (Vector.map (fun x => (x, f x)) xs) =
   (Vector.zip xs (Vector.map f xs)) := by
   ext i h : 2

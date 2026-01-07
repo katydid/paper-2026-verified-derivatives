@@ -19,10 +19,10 @@ open List (
 
 -- Definitions
 
-def tree {α: Type} (φ: α -> Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
+def tree {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
   fun xs => ∃ label children, xs = [Hedge.Node.mk label children] /\ φ label /\ R children
 
-def tree_match {α: Type} (φ: α -> Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
+def tree_match {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
   fun xs =>
     match xs with
     | [Hedge.Node.mk label children] =>
@@ -59,15 +59,15 @@ theorem tree_exists_is_tree_match:
 
 example: Lang (Hedge.Node Nat) := (tree (fun x => x = 1) (Lang.or (tree (fun x => x = 1) Lang.emptystr) Lang.emptyset))
 
-theorem null_iff_tree {α: Type} {p: α -> Bool} {children: Lang (Hedge.Node α)}:
+theorem null_iff_tree {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
   Lang.null (tree p children) <-> False :=
   Iff.intro nofun nofun
 
-theorem null_tree {α: Type} {p: α -> Bool} {children: Lang (Hedge.Node α)}:
+theorem null_tree {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
   Lang.null (tree p children) = False := by
   rw [null_iff_tree]
 
-theorem derive_iff_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α} {xs: Hedge α}:
+theorem derive_iff_tree {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α} {xs: Hedge α}:
   (Lang.derive (tree p childlang) (Hedge.Node.mk label children)) xs <->
   (Lang.onlyif (p label /\ childlang children) Lang.emptystr) xs := by
   simp only [Lang.derive]
@@ -90,7 +90,7 @@ theorem derive_iff_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node 
     exact hif
 
 -- Hedge.Lang.derive (Hedge.Lang.tree p.eval (Denote.denote children)) a
-theorem derive_tree {α: Type} {p: α -> Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α}:
+theorem derive_tree {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α}:
   (Lang.derive (tree p childlang) (Hedge.Node.mk label children)) =
   (Lang.onlyif (p label /\ childlang children) Lang.emptystr) := by
   funext

@@ -11,7 +11,7 @@ def Pred.eval {α: Type} [BEq α] (p: Pred α) (x: α): Prop :=
   | Pred.eq y => x = y
   | Pred.any => True
 
-def Pred.pred_is_decpred {α : Type} [d: DecidableEq α] (p: Pred α): (a: α) -> Decidable (Pred.eval p a) :=
+def Pred.pred_is_decpred {α : Type} [d: DecidableEq α] (p: Pred α): (a: α) → Decidable (Pred.eval p a) :=
   fun x =>
     match p with
     | Pred.eq y => d x y

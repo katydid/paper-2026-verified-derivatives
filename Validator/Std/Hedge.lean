@@ -224,7 +224,7 @@ local elab "simp_sizeOf" : tactic => do
   )
 
 private theorem lt_plus (x y z: Nat):
-  y < z -> x + y < x + z := by
+  y < z → x + y < x + z := by
   simp
 
 theorem take_eq_self_iff (xs : List α) {n : Nat} : xs.take n = xs ↔ xs.length ≤ n :=
@@ -305,7 +305,7 @@ theorem le (a b: Nat):
       omega
 
 theorem elem_is_leq_sizeOf {α: Type} [SizeOf α] {x: Hedge.Node α} {ys: Hedge α}:
-  x ∈ ys ->
+  x ∈ ys →
   sizeOf x <= sizeOf ys := by
   intro h
   induction h with
@@ -318,7 +318,7 @@ theorem elem_is_leq_sizeOf {α: Type} [SizeOf α] {x: Hedge.Node α} {ys: Hedge 
 
 theorem Node.sizeOf_lt_cons_child {α: Type} (label: α) (x1: Hedge.Node α) (x2: Hedge.Node α) (xs: Hedge α):
   sizeOf x1 < sizeOf (Hedge.Node.mk label xs)
-  -> sizeOf x1 < sizeOf (Hedge.Node.mk label (x2 :: xs)) := by
+  → sizeOf x1 < sizeOf (Hedge.Node.mk label (x2 :: xs)) := by
   simp
   intro h
   omega
