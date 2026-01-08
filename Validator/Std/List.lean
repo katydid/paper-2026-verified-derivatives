@@ -82,6 +82,22 @@ theorem list_sizeOf_cons [SizeOf α] (xs ys: List α):
     simp only [List.cons.sizeOf_spec] at *
     omega
 
+theorem list_sizeOf_cons_lt_cons [SizeOf α] (x: α) {ys xs: List α} (h_lt: sizeOf ys < sizeOf xs):
+  sizeOf (x :: ys) < sizeOf (x :: xs) := by
+  simp only [cons.sizeOf_spec, Nat.add_lt_add_iff_left]
+  exact h_lt
+
+theorem list_sizeOf_lt_cons_eq [SizeOf α] (x: α) {ys xs: List α} (h_eq: ys = xs):
+  sizeOf ys < sizeOf (x :: xs) := by
+  rw [h_eq]
+  simp [cons.sizeOf_spec]
+  exact Nat.pos_of_neZero (1 + sizeOf x)
+
+theorem list_sizeOf_lt_cons_lt [SizeOf α] (x: α) {ys xs: List α} (h_lt: sizeOf ys < sizeOf xs):
+  sizeOf ys < sizeOf (x :: xs) := by
+  simp [cons.sizeOf_spec]
+  exact Nat.lt_add_left (1 + sizeOf x) h_lt
+
 theorem list_length_neq_take {n: Nat} {xs: List α}:
   ¬List.take n xs = xs -> (List.take n xs).length < xs.length := by
   intro h
@@ -375,18 +391,15 @@ theorem intersections_sizeOf1 (xs: List α):
         exact congrArg (List.cons x) h_eq
       · right
         rw [←hp_eq]
-        simp only [cons.sizeOf_spec, Nat.add_lt_add_iff_left]
-        exact h_lt
+        exact list_sizeOf_cons_lt_cons x h_lt
     · rcases hp with ⟨fst, snd, hp_mem, hp_eq⟩
       obtain h_eq | h_lt := ih (fst, snd) hp_mem
       · right
         rw [←hp_eq]
-        rw [h_eq]
-        simp only [cons.sizeOf_spec, sizeOf_default, Nat.lt_add_left_iff_pos, Nat.lt_add_one]
+        exact list_sizeOf_lt_cons_eq x h_eq
       · right
         rw [←hp_eq]
-        simp only [cons.sizeOf_spec]
-        exact Nat.lt_add_left 1 h_lt
+        exact list_sizeOf_lt_cons_lt x h_lt
 
 theorem intersections_sizeOf1_idx (xs: List α) (i: Fin (List.intersections xs).length):
   ((List.intersections xs).get i).1 = xs \/ sizeOf ((List.intersections xs).get i).1 < sizeOf xs := by
@@ -408,12 +421,10 @@ theorem intersections_sizeOf2 (xs: List α):
       obtain h_eq | h_lt := ih (fst, snd) hp_mem
       · right
         rw [←hp_eq]
-        rw [h_eq]
-        simp only [cons.sizeOf_spec, sizeOf_default, Nat.lt_add_left_iff_pos, Nat.lt_add_one]
+        exact list_sizeOf_lt_cons_eq x h_eq
       · right
         rw [←hp_eq]
-        simp only [cons.sizeOf_spec]
-        exact Nat.lt_add_left 1 h_lt
+        exact list_sizeOf_lt_cons_lt x h_lt
     · rcases hp with ⟨fst, snd, hp_mem, hp_eq⟩
       obtain h_eq | h_lt := ih (fst, snd) hp_mem
       · left
@@ -421,8 +432,7 @@ theorem intersections_sizeOf2 (xs: List α):
         exact congrArg (List.cons x) h_eq
       · right
         rw [←hp_eq]
-        simp only [cons.sizeOf_spec, Nat.add_lt_add_iff_left]
-        exact h_lt
+        exact list_sizeOf_cons_lt_cons x h_lt
 
 theorem intersections_sizeOf2_idx (xs: List α) (i: Fin (List.intersections xs).length):
   ((List.intersections xs).get i).2 = xs \/ sizeOf ((List.intersections xs).get i).2 < sizeOf xs := by
