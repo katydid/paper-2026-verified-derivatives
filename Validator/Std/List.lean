@@ -318,18 +318,15 @@ theorem intersections1_length_is_le (xs: List α):
       simp
     | cons x xs ih =>
       simp [intersections, intersectionsAcc, List.map_append] at hys
+      simp [List.mem_map] at ih
       rcases hys with hys | hys
       · rcases hys with ⟨fst, ⟨snd, hpair⟩, hys⟩
-        have hfst : fst ∈ List.map (·.1) (intersections xs) := by
-          exact List.mem_map.mpr ⟨(fst, snd), hpair, rfl⟩
-        have hlen := ih fst hfst
+        have hlen := ih fst snd hpair
         rw [←hys]
-        rw [length_cons]
-        exact Nat.succ_le_succ hlen
+        simp only [length_cons, Nat.add_le_add_iff_right]
+        assumption
       · rcases hys with ⟨snd, hpair⟩
-        have hys : ys ∈ List.map (·.1) (intersections xs) := by
-          exact List.mem_map.mpr ⟨(ys, snd), hpair, rfl⟩
-        have hlen := ih ys hys
+        have hlen := ih ys snd hpair
         rw [length_cons]
         exact Nat.le_succ_of_le hlen
 
