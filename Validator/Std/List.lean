@@ -356,12 +356,38 @@ theorem intersections_contains_itself_fst_idx (xs: List α):
   rw [hi]
   exact hp_eq
 
-theorem intersections_sizeOf1 (xs: List α) (i: Fin (List.intersections xs).length):
-  ((List.intersections xs).get i).1 = xs \/ sizeOf ((List.intersections xs).get i).1 < sizeOf xs := by
-  obtain ⟨i, hi⟩ := i
-  induction xs generalizing i with
+theorem intersections_sizeOf1 (xs: List α):
+  ∀ p ∈ intersections xs, p.1 = xs \/ sizeOf p.1 < sizeOf xs := by
+  induction xs with
   | nil =>
-    simp [intersections, intersectionsAcc]
+    intro p hp
+    simp [intersections, intersectionsAcc] at hp
+    left
+    rw [hp]
   | cons x xs ih =>
-    simp [intersections, intersectionsAcc]
-    sorry
+    intro p hp
+    simp [intersections, intersectionsAcc] at hp
+    rcases hp with hp | hp
+    · rcases hp with ⟨fst, snd, hp_mem, hp_eq⟩
+      obtain h_eq | h_lt := ih (fst, snd) hp_mem
+      · left
+        rw [←hp_eq]
+        exact congrArg (List.cons x) h_eq
+      · right
+        rw [←hp_eq]
+        simp only [cons.sizeOf_spec, Nat.add_lt_add_iff_left]
+        exact h_lt
+    · rcases hp with ⟨fst, snd, hp_mem, hp_eq⟩
+      obtain h_eq | h_lt := ih (fst, snd) hp_mem
+      · right
+        rw [←hp_eq]
+        rw [h_eq]
+        simp only [cons.sizeOf_spec, sizeOf_default, Nat.lt_add_left_iff_pos, Nat.lt_add_one]
+      · right
+        rw [←hp_eq]
+        simp only [cons.sizeOf_spec]
+        exact Nat.lt_add_left 1 h_lt
+
+theorem intersections_sizeOf1_idx (xs: List α) (i: Fin (List.intersections xs).length):
+  ((List.intersections xs).get i).1 = xs \/ sizeOf ((List.intersections xs).get i).1 < sizeOf xs := by
+  exact intersections_sizeOf1 xs ((intersections xs).get i) (get_mem _ _)
