@@ -322,6 +322,10 @@ theorem intersections_length_is_correct (xs: List α):
   unfold intersectionsAcc_length
   simp
 
+theorem intersections_mem_swap (xs: List α) :
+  p ∈ intersections xs → (p.2, p.1) ∈ intersections xs := by
+  sorry
+
 theorem intersections1_length_is_le (xs: List α):
   ∀ ys ∈ (List.map (·.1) (intersections xs)),
     ys.length <= length xs
