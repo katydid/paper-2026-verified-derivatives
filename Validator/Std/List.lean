@@ -324,7 +324,33 @@ theorem intersections_length_is_correct (xs: List α):
 
 theorem intersections_mem_swap (xs: List α) :
   p ∈ intersections xs → (p.2, p.1) ∈ intersections xs := by
-  sorry
+  induction xs generalizing p with
+  | nil =>
+    intro hp
+    simp [intersections, intersectionsAcc] at *
+    subst hp
+    simp only [and_self]
+  | cons x xs ih =>
+    intro hp
+    simp [intersections, intersectionsAcc, List.mem_append] at hp
+    rcases hp with hp | hp
+    · rcases hp with ⟨a, b, hab, heq⟩
+      simp [intersections, intersectionsAcc, List.mem_append]
+      right
+      exists b
+      exists a
+      and_intros
+      · exact ih hab
+      · rw [←heq]
+      · rw [←heq]
+    · rcases hp with ⟨a, b, hab, heq⟩
+      simp [intersections, intersectionsAcc, List.mem_append]
+      left
+      exists b
+      and_intros
+      · rw [←heq]
+        exact ih hab
+      · rw [←heq]
 
 theorem intersections1_length_is_le (xs: List α):
   ∀ ys ∈ (List.map (·.1) (intersections xs)),
