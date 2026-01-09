@@ -376,8 +376,6 @@ theorem intersections1_length_is_le (xs: List α):
         rw [length_cons]
         exact Nat.le_succ_of_le hlen
 
--- theorem intersectionsAcc_contains_itself_fst (xs: List α) (i: Fin (intersections_length xs)):
-
 theorem intersections_contains_itself_fst (xs: List α):
   ∃ p ∈ intersections xs, p.1 = xs := by
   induction xs with
