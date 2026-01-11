@@ -1,6 +1,7 @@
 import Validator.Regex.Drawer
 import Validator.Regex.Enter
 import Validator.Regex.Extract
+import Validator.Regex.IfExpr
 import Validator.Regex.Lang
 import Validator.Regex.Leave
 import Validator.Regex.Map
