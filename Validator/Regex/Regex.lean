@@ -7,7 +7,7 @@ inductive Regex (σ: Type) where
   | emptyset | emptystr | symbol (s: σ)
   | or (r1 r2: Regex σ) | concat (r1 r2: Regex σ) | star (r1: Regex σ)
   | interleave (r1 r2: Regex σ)
-  deriving DecidableEq, Ord, Repr, Hashable, BEq
+  deriving DecidableEq, Ord, Repr, Hashable
 
 def Regex.null: (r: Regex σ) → Bool
   | emptyset => false | emptystr => true | symbol _ => false | star _ => true
